@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.four.webbackend.mapper.FriendshipMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.four.webbackend.entity.FriendshipEntity">
+        <id column="friendship_id" property="friendshipId" />
+        <result column="user1_id" property="user1Id" />
+        <result column="user2_id" property="user2Id" />
+        <result column="status" property="status" />
+        <result column="version" property="version" />
+        <result column="id_dalete" property="idDalete" />
+        <result column="gmt_create" property="gmtCreate" />
+        <result column="gmt_update" property="gmtUpdate" />
+    </resultMap>
+
+</mapper>

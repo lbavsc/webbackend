@@ -17,7 +17,7 @@ public class DataUtil {
      * 判断当前日期是否大于某个日期
      *
      * @param date yyyy-MM-dd
-     * @return
+     * @return boolean
      */
     public static boolean afterDateNow(String date) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy年M月d日");
@@ -32,7 +32,7 @@ public class DataUtil {
      * 判断当前日期是否大于某个日期
      *
      * @param date yyyy-MM-dd
-     * @return
+     * @return boolean
      */
     public static boolean afterDateNow(Date date) {
         Date now = new Date();
@@ -43,7 +43,7 @@ public class DataUtil {
      * 判断当前日期是否大于某个日期
      *
      * @param date yyyy-MM-dd
-     * @return
+     * @return boolean
      */
     public static boolean beforeDateNow(Date date) {
         Date now = new Date();

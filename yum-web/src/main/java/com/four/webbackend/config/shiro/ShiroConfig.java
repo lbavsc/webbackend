@@ -25,6 +25,7 @@ import java.util.Map;
  **/
 @Configuration
 public class ShiroConfig {
+
     @Bean
     public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager){
         ShiroFilterFactoryBean shiroFilterFactoryBean=new ShiroFilterFactoryBean();
@@ -37,8 +38,8 @@ public class ShiroConfig {
         //放行接口
         filterRuleMap.put("/","anon");
         filterRuleMap.put("/factoring/user/verification_code", "anon");
-        filterRuleMap.put("/factoring/user/verification_code2", "anon");
         filterRuleMap.put("/login","anon");
+        filterRuleMap.put("/user/login","anon");
         filterRuleMap.put("/lib/**","anon");
         filterRuleMap.put("/static/**","anon");
         filterRuleMap.put("/factoring/user/**/login","anon");
