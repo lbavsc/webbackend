@@ -2,6 +2,9 @@ package com.four.webbackend.service;
 
 import com.four.webbackend.entity.FriendshipEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.four.webbackend.model.FriendshipDto;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface FriendshipService extends IService<FriendshipEntity> {
 
+    List<FriendshipDto> listBuddy(String uuid);
 }
