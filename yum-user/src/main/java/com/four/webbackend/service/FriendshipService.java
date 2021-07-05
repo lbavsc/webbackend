@@ -17,4 +17,8 @@ import java.util.List;
 public interface FriendshipService extends IService<FriendshipEntity> {
 
     List<FriendshipDto> listBuddy(String uuid);
+
+    void addBuddy(String uuid, String identifier);
+
+    void deleteBuddy(String uuid, String uid);
 }

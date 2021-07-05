@@ -7,15 +7,14 @@ import com.four.webbackend.model.UserDto;
 import com.four.webbackend.service.FriendshipService;
 import com.four.webbackend.util.ResultUtil;
 import com.four.webbackend.util.TokenUtil;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.Tag;
 import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
@@ -29,6 +28,7 @@ import java.util.List;
  * @since 2021-07-05
  */
 @RestController
+@Api(tags = "好友模块")
 @RequestMapping("/friendship")
 public class FriendshipController {
 
@@ -53,7 +53,27 @@ public class FriendshipController {
         return ResultUtil.success(dtos);
     }
 
+    @ApiOperation("添加好友")
+    @GetMapping("/addBuddy")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity addBuddy(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                 @ApiParam("人员的UUID或者邮箱") @RequestParam String uid) {
+        String uuid = TokenUtil.getAccount(token);
+        friendshipService.deleteBuddy(uuid, uid);
 
+        return ResultUtil.success();
+    }
+
+    @ApiOperation("添加好友")
+    @GetMapping("/deleteBuddy")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity deleteBuddy(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                 @ApiParam("人员的UUID或者邮箱") @RequestParam String identifier) {
+        String uuid = TokenUtil.getAccount(token);
+        friendshipService.addBuddy(uuid, identifier);
+
+        return ResultUtil.success();
+    }
 
 }
 

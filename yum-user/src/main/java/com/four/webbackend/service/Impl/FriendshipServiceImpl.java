@@ -1,6 +1,7 @@
 package com.four.webbackend.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.four.webbackend.constant.FriendshipConstant;
 import com.four.webbackend.entity.FriendshipEntity;
 import com.four.webbackend.entity.UserEntity;
 import com.four.webbackend.handler.GlobalExceptionHandler;
@@ -54,7 +55,7 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
 
 
         List<FriendshipEntity> friendshipEntities = baseMapper.selectList(new QueryWrapper<FriendshipEntity>()
-                .eq("status", 1)
+                .eq("status", FriendshipConstant.PASS_REVIEW)
                 .and(wrapper -> {
                     wrapper.eq("user1_id", userEntity.getUserId())
                             .or().eq("user2_id", userEntity.getUserId());
@@ -84,5 +85,69 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
         });
 
         return rest;
+    }
+
+    @Override
+    public void addBuddy(String uuid, String identifier) {
+        HttpServletResponse response = getResponse();
+        UserEntity userEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
+                .select("user_id")
+                .eq("user_uuid", uuid));
+        if (userEntity == null) {
+            GlobalExceptionHandler.responseError(response, "没有uuid为" + uuid + "的用户");
+            return;
+        }
+        UserEntity buddyEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
+                .select("user_id")
+                .and(wrapper -> {
+                    wrapper.eq("user_uuid", identifier)
+                            .or().eq("email", identifier);
+                }));
+        if (buddyEntity == null) {
+            GlobalExceptionHandler.responseError(response, "没有uuid(邮箱)为" + identifier + "的用户");
+        }
+
+        if (listBuddy(uuid).size() > 0) {
+            GlobalExceptionHandler.responseError(response, "对方已是您的好友");
+            return;
+        }
+        FriendshipEntity friendshipEntity = new FriendshipEntity();
+        friendshipEntity.setUser1Id(userEntity.getUserId());
+        assert buddyEntity != null;
+        friendshipEntity.setUser2Id(buddyEntity.getUserId());
+        friendshipEntity.setStatus(FriendshipConstant.UNDER_REVIEW);
+
+        baseMapper.insert(friendshipEntity);
+    }
+
+    @Override
+    public void deleteBuddy(String uuid, String uid) {
+        HttpServletResponse response = getResponse();
+        UserEntity userEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
+                .select("user_id")
+                .eq("user_uuid", uuid));
+        if (userEntity == null) {
+            GlobalExceptionHandler.responseError(response, "没有uuid为" + uuid + "的用户");
+            return;
+        }
+        UserEntity buddyEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
+                .select("user_id")
+                .eq("user_uuid", uid));
+        if (buddyEntity == null) {
+            GlobalExceptionHandler.responseError(response, "没有uuid为" + uid + "的用户");
+            return;
+        }
+        baseMapper.delete(new QueryWrapper<FriendshipEntity>()
+                .eq("user1_id", userEntity.getUserId())
+                .eq("user2_id", buddyEntity.getUserId())
+                .or(wrapper -> {
+                    wrapper.eq("user1_id", buddyEntity.getUserId())
+                            .eq("user2_id", userEntity.getUserId());
+                }));
+
+    }
+
+    private HttpServletResponse getResponse() {
+        return ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
     }
 }
