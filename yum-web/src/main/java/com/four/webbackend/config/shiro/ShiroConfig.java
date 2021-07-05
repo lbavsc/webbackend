@@ -36,30 +36,32 @@ public class ShiroConfig {
         //不要用HashMap来创建Map，会有某些配置失效，要用链表的LinkedHashmap
         Map<String,String> filterRuleMap=new LinkedHashMap<>();
         //放行接口
+        //首页
         filterRuleMap.put("/","anon");
-        filterRuleMap.put("/factoring/user/verification_code", "anon");
-        filterRuleMap.put("/login","anon");
-        filterRuleMap.put("/user/login","anon");
+
+        //静态文件
         filterRuleMap.put("/lib/**","anon");
         filterRuleMap.put("/static/**","anon");
-        filterRuleMap.put("/factoring/user/**/login","anon");
 
+        // swagger
         filterRuleMap.put("/swagger-ui.html", "anon");
         filterRuleMap.put("/swagger-resources/**", "anon");
         filterRuleMap.put("/v2/api-docs/**", "anon");
         filterRuleMap.put("/webjars/springfox-swagger-ui/**", "anon");
 
-        filterRuleMap.put("/factoring/company_overview/get", "anon");
-        filterRuleMap.put("/factoring/company_overview/list", "anon");
-        filterRuleMap.put("/factoring/product_introduction/get", "anon");
-        filterRuleMap.put("/factoring/product_introduction/list", "anon");
-        filterRuleMap.put("/factoring/home_product_introduction/get", "anon");
-        filterRuleMap.put("/factoring/conntact_us/get", "anon");
-        filterRuleMap.put("/factoring/recruitment/get", "anon");
-        filterRuleMap.put("/factoring/recruitment/list", "anon");
+        // 用户相关
+        filterRuleMap.put("/user/login","anon");
+        filterRuleMap.put("/user/regist","anon");
 
+        // 验证码
+        filterRuleMap.put("/check_code","anon");
+        filterRuleMap.put("/email/check_code","anon");
+        filterRuleMap.put("/email/check_code/reset","anon");
+
+        // druid
         filterRuleMap.put("/druid/**", "anon");
         filterRuleMap.put("/factoring/druid/**", "anon");
+
         //拦截所有接口
         filterRuleMap.put("/**","jwt");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterRuleMap);
@@ -84,17 +86,6 @@ public class ShiroConfig {
         securityManager.setRealm(customRealm);
         return securityManager;
     }
-
-    /**
-     * 配置代理会导致doGetAuthorizationInfo执行两次
-     */
-//    @Bean
-//    public DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator(){
-//        DefaultAdvisorAutoProxyCreator defaultAdvisorAutoProxyCreator=new DefaultAdvisorAutoProxyCreator();
-//        //强制使用从cglib动态代理机制，防止重复代理可能引起代理出错问题
-//        defaultAdvisorAutoProxyCreator.setProxyTargetClass(true);
-//        return defaultAdvisorAutoProxyCreator;
-//    }
 
 
     /**

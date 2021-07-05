@@ -32,7 +32,7 @@ public class SwaggerConfig {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(apiInfo())
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.manage"))
+                .apis(RequestHandlerSelectors.basePackage("com.four.webbackend"))
                 .paths(PathSelectors.any())
                 .build()
                 .enable(swaggerEnable);

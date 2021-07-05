@@ -68,7 +68,7 @@ spring:
         max-active: -1
         max-wait: 3000ms
     timeout: 3000ms
-    password:
+    password: sdvcsderf34fdDW4Evfcdee
 
 logging:
   level:
@@ -235,4 +235,4 @@ spring:
       on-profile: prod
 
 swagger:
-  enable: false
+  enable: true
