@@ -2,9 +2,7 @@ package com.four.webbackend.service;
 
 import com.four.webbackend.entity.UserEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.four.webbackend.model.LoginVo;
-import com.four.webbackend.model.RegistVo;
-import com.four.webbackend.model.UserDto;
+import com.four.webbackend.model.*;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -23,4 +21,8 @@ public interface UserService extends IService<UserEntity> {
     boolean login(LoginVo loginVo,  HttpServletResponse response);
 
     UserDto info(String userUuid);
+
+    UserDto modify(UserVo userVo, String uuid);
+
+    boolean modifyPwd(PasswdVo passwdVo, String uuid);
 }

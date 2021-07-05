@@ -4,16 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.four.webbackend.entity.UserEntity;
 import com.four.webbackend.handler.GlobalExceptionHandler;
 import com.four.webbackend.mapper.UserMapper;
-import com.four.webbackend.model.LoginVo;
-import com.four.webbackend.model.RegistVo;
-import com.four.webbackend.model.UserDto;
+import com.four.webbackend.model.*;
 import com.four.webbackend.service.UserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.four.webbackend.util.IdUtils;
-import com.four.webbackend.util.PwdToMd5;
-import com.four.webbackend.util.RedisUtil;
-import com.four.webbackend.util.TokenUtil;
+import com.four.webbackend.util.*;
+import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.shiro.authc.AccountException;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
@@ -76,12 +73,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         if (userEntity == null) {
             return null;
         }
+        UserDto userDto = new UserDto();
+        BeanUtils.copyProperties(userEntity, userDto);
 
-        return UserDto.builder()
-                .userUuid(userEntity.getUserUuid())
-                .email(userEntity.getEmail())
-                .userName(userEntity.getUserName())
-                .build();
+        return userDto;
+    }
+
+    @Override
+    public UserDto modify(UserVo userVo, String uuid) {
+
+        if (userVo.getUserEmail() != null && userVo.getCheckCode() == null) {
+            return null;
+        }
+
+
+        UserEntity userEntity = baseMapper.selectOne(new QueryWrapper<UserEntity>().eq("user_uuid", uuid));
+        BeanUtils.copyProperties(userVo, userEntity);
+        baseMapper.updateById(userEntity);
+
+        userEntity = baseMapper.selectOne(new QueryWrapper<UserEntity>().eq("user_uuid", uuid));
+        UserDto dto = new UserDto();
+        BeanUtils.copyProperties(userEntity, dto);
+        return dto;
+    }
+
+    @Override
+    public boolean modifyPwd(PasswdVo passwdVo, String uuid) {
+        UserEntity userEntity = baseMapper.selectOne(new QueryWrapper<UserEntity>().eq("user_uuid", uuid));
+        String passwd = PwdToMd5.encrypt(passwdVo.getOldPasswd(), userEntity.getUserName());
+        if (!passwd.equals(userEntity.getPassword())) {
+            throw new AccountException("旧密码错误");
+        }
+
+        userEntity.setPassword(passwd);
+        return baseMapper.updateById(userEntity) == 1;
     }
 
     private String creatToken(String userUuId) {
