@@ -23,6 +23,12 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.four</groupId>
+            <artifactId>yum-common</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -38,7 +44,7 @@
                             <artifactId>lombok</artifactId>
                         </exclude>
                     </excludes>
-                    <mainClass>com.four.WebbackendApplication</mainClass>
+                    <mainClass>com.four.webbackend.WebBackendApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>
