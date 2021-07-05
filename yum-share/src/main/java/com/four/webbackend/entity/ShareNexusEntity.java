@@ -1,0 +1,63 @@
+package com.four.webbackend.entity;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.IdType;
+import java.util.Date;
+import com.baomidou.mybatisplus.annotation.Version;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableField;
+import java.io.Serializable;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
+
+/**
+ * <p>
+ * 分享链接关系表
+ * </p>
+ *
+ * @author lbavsc
+ * @since 2021-07-05
+ */
+@Data
+@EqualsAndHashCode(callSuper = false)
+@Accessors(chain = true)
+@TableName("share_nexus")
+@ApiModel(value="ShareNexusEntity对象", description="分享链接关系表")
+public class ShareNexusEntity implements Serializable {
+
+    private static final long serialVersionUID=1L;
+
+    @ApiModelProperty(value = "分享关系id")
+    @TableId(value = "share_nexus_id", type = IdType.AUTO)
+    private Integer shareNexusId;
+
+    @ApiModelProperty(value = "链接ID")
+    @TableField("link_id")
+    private Integer linkId;
+
+    @ApiModelProperty(value = "分享者ID")
+    @TableField("user_id")
+    private Integer userId;
+
+    @ApiModelProperty(value = "乐观锁")
+    @TableField("version")
+    @Version
+    private Integer version;
+
+    @ApiModelProperty(value = "逻辑删除")
+    @TableField("id_dalete")
+    private Integer idDalete;
+
+    @ApiModelProperty(value = "创建时间")
+    @TableField("gmt_create")
+    private Date gmtCreate;
+
+    @ApiModelProperty(value = "修改时间")
+    @TableField("gmt_update")
+    private Date gmtUpdate;
+
+
+}
