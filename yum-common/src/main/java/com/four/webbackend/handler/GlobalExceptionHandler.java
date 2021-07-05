@@ -41,8 +41,8 @@ public class GlobalExceptionHandler {
      * 捕捉图片错误异常
      */
     @ExceptionHandler(IIOException.class)
-    public ResultEntity handle403(IIOException e) {
-        return ResultUtil.error(403, "图片类型错误,请更换图片,上传图片时请勿直接修改后缀上传[" + e.getMessage() + "]");
+    public ResultEntity handle403IoException() {
+        return ResultUtil.error(403, "图片类型错误,请更换图片,上传图片时请勿直接修改后缀上传");
     }
 
 
@@ -67,8 +67,8 @@ public class GlobalExceptionHandler {
      * 单独捕捉Shiro(UnauthorizedException)异常 该异常为访问有权限管控的请求而该用户没有所需权限所抛出的异常
      */
     @ExceptionHandler(UnauthorizedException.class)
-    public ResultEntity handle401(UnauthorizedException e) {
-        return ResultUtil.error(401, "无权访问(Unauthorized)[" + e.getMessage() + "]");
+    public ResultEntity handle401UnauthorizedException() {
+        return ResultUtil.error(401, "无权访问(Unauthorized)IIOException");
     }
 
     /**
@@ -76,19 +76,21 @@ public class GlobalExceptionHandler {
      * 该异常为以游客身份访问有权限管控的请求无法对匿名主体进行授权，而授权失败所抛出的异常
      */
     @ExceptionHandler(UnauthenticatedException.class)
-    public ResultEntity handle401(UnauthenticatedException e) {
-        return ResultUtil.error(401, "无权访问(Unauthorized):当前Subject是匿名Subject，请先登录(This subject is anonymous.)[" + e.getMessage() + "]");
+    public ResultEntity handle401UnauthenticatedException() {
+        return ResultUtil.error(401, "无权访问(Unauthorized):当前Subject是匿名Subject，请先登录(This subject is anonymous.)");
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
-    public  ResultEntity handle413(MaxUploadSizeExceededException e) {
-        return ResultUtil.error(413, "上传文件大小超过限制, 单文件最大为3M[" + e.getMessage() + "]");
+    public ResultEntity handle413MaxUploadSizeExceededException() {
+
+        return ResultUtil.error(413, "上传文件大小超过限制, 单文件最大为3M");
     }
 
     @ExceptionHandler(AccountException.class)
     public ResultEntity handle401(AccountException e) {
         return ResultUtil.error(401, e.getMessage());
     }
+
     /**
      * 捕捉校验异常(BindException)
      */
@@ -109,7 +111,6 @@ public class GlobalExceptionHandler {
     }
 
 
-
     /**
      * 捕捉其他所有异常
      */
@@ -121,8 +122,9 @@ public class GlobalExceptionHandler {
 
     /**
      * 自定义抛出异常
+     *
      * @param response response
-     * @param msg msg
+     * @param msg      msg
      */
     public static void responseError(ServletResponse response, String msg) {
 
