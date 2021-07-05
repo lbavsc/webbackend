@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2021-07-05
  */
 @RestController
-@RequestMapping("/share-nexus-entity")
+@RequestMapping("/share/nexus")
 public class ShareNexusController {
 
 }

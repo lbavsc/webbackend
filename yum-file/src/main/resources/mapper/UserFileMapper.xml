@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.four.webbackend.mapper.UserFileMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.four.webbackend.entity.UserFileEntity">
+        <id column="user_file_id" property="userFileId" />
+        <result column="user_id" property="userId" />
+        <result column="dir_id" property="dirId" />
+        <result column="file_id" property="fileId" />
+        <result column="version" property="version" />
+        <result column="id_dalete" property="idDalete" />
+        <result column="gmt_create" property="gmtCreate" />
+        <result column="gmt_update" property="gmtUpdate" />
+    </resultMap>
+
+</mapper>
