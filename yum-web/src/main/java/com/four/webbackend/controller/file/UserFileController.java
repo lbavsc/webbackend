@@ -4,6 +4,7 @@ package com.four.webbackend.controller.file;
 import com.four.webbackend.model.ResultEntity;
 import com.four.webbackend.service.UserFileService;
 import com.four.webbackend.util.ResultUtil;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.shiro.authz.annotation.Logical;
@@ -22,6 +23,7 @@ import javax.validation.constraints.NotNull;
  * @since 2021-07-05
  */
 @RestController
+@Api(tags = "文件-用户关系模块")
 @RequestMapping("/user/file")
 public class UserFileController {
 

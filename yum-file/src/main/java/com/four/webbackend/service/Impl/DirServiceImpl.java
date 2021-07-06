@@ -2,6 +2,7 @@ package com.four.webbackend.service.Impl;
 
 import com.four.webbackend.entity.DirEntity;
 import com.four.webbackend.mapper.DirMapper;
+import com.four.webbackend.model.RenameFileOrDirVo;
 import com.four.webbackend.service.DirService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.four.webbackend.util.TokenUtil;
@@ -24,5 +25,10 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
         Integer userId = TokenUtil.getUserId(token);
         DirEntity dirEntity = baseMapper.selectById(dirId);
         return dirEntity != null && dirEntity.getUserId().equals(userId);
+    }
+
+    @Override
+    public boolean rename(String token, RenameFileOrDirVo renameFileOrDirVo) {
+        return false;
     }
 }

@@ -1,16 +1,14 @@
 package com.four.webbackend.controller.file;
 
 
-import com.four.webbackend.model.ResultEntity;
-import com.four.webbackend.model.UpdateFileVo;
-import com.four.webbackend.model.UserDto;
-import com.four.webbackend.model.UserVo;
+import com.four.webbackend.model.*;
 import com.four.webbackend.service.DirService;
 import com.four.webbackend.service.FileService;
 import com.four.webbackend.service.UserFileService;
 import com.four.webbackend.util.CheckCodeUtil;
 import com.four.webbackend.util.ResultUtil;
 import com.four.webbackend.util.TokenUtil;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.shiro.authz.annotation.Logical;
@@ -29,6 +27,7 @@ import javax.validation.constraints.NotNull;
  * @since 2021-07-05
  */
 @RestController
+@Api(tags = "文件模块")
 @RequestMapping("/file")
 public class FileController {
 
@@ -68,12 +67,44 @@ public class FileController {
             updateFileVo.setFile(null);
         }
 
-        if (fileService.updateFile(token, updateFileVo)) {
+        if (!fileService.updateFile(token, updateFileVo)) {
             return null;
         }
         return ResultUtil.success();
     }
 
+    @ApiOperation("移动文件")
+    @PostMapping("/mobileFile")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity mobileFile(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                   MobileFileVo mobileFileVo) {
+
+        if (!fileService.mobileFile(token, mobileFileVo)) {
+            return null;
+        }
+
+        return ResultUtil.success();
+    }
+
+    @ApiOperation("重命名文件或文件夹")
+    @PostMapping("/rename")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity rename(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                   RenameFileOrDirVo renameFileOrDirVo) {
+
+        if (renameFileOrDirVo.getIsDir()) {
+            if (!dirService.rename(token, renameFileOrDirVo)) {
+                return null;
+            }
+        } else  {
+            if (!fileService.rename(token, renameFileOrDirVo)) {
+                return null;
+            }
+        }
+
+
+        return ResultUtil.success();
+    }
 
 }
 

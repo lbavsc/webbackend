@@ -8,6 +8,8 @@ import com.four.webbackend.handler.GlobalExceptionHandler;
 import com.four.webbackend.mapper.FileMapper;
 
 import com.four.webbackend.mapper.UserFileMapper;
+import com.four.webbackend.model.MobileFileVo;
+import com.four.webbackend.model.RenameFileOrDirVo;
 import com.four.webbackend.model.UpdateFileVo;
 import com.four.webbackend.service.FileService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -26,6 +28,7 @@ import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.IntFunction;
 
 /**
  * <p>
@@ -52,6 +55,49 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
         } else {
             return updateFileExists(token, updateFileVo);
         }
+    }
+
+    @Override
+    public boolean mobileFile(String token, MobileFileVo mobileFileVo) {
+        HttpServletResponse response = getResponse();
+        UserFileEntity userFileEntity = userFileMapper.selectOne(new QueryWrapper<UserFileEntity>()
+                .eq("user_id", TokenUtil.getUserId(token))
+                .eq("dir_id", mobileFileVo.getDirSourceId())
+                .eq("file_id", mobileFileVo.getFileId()));
+
+        if (userFileEntity == null) {
+            GlobalExceptionHandler.responseError(response, "该目录不存在此文件");
+            return false;
+        }
+
+        userFileEntity.setDirId(mobileFileVo.getDirFromId());
+
+        return userFileMapper.updateById(userFileEntity) == 1;
+    }
+
+    @Override
+    public boolean rename(String token, RenameFileOrDirVo renameFileOrDirVo) {
+        Integer userId = TokenUtil.getUserId(token);
+        HttpServletResponse response = getResponse();
+        FileEntity fileEntity = baseMapper.selectById(renameFileOrDirVo.getObjectId());
+
+        if (fileEntity == null) {
+            GlobalExceptionHandler.responseError(response, "没有该文件");
+            return false;
+        }
+
+        int count = userFileMapper.selectCount(new QueryWrapper<UserFileEntity>()
+                .eq("user_id", userId)
+                .eq("file_id", renameFileOrDirVo.getObjectId()));
+
+        if (count <= 0) {
+            GlobalExceptionHandler.responseError(response, "没有该文件");
+            return false;
+        }
+
+        // FIXME: 2021/7/6 存在设计漏洞,修改一个文件名,其他同用户同文件名也会变化,文件名不应该存储在文件信息表里,应该存在文件-用户关系表里,这样的话,同文件在不同文件夹也可拥有不同文件名
+        fileEntity.setFileName(renameFileOrDirVo.getNewName());
+        return baseMapper.updateById(fileEntity) == 1;
     }
 
 

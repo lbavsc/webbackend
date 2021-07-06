@@ -1,6 +1,7 @@
 package com.four.webbackend.controller.file;
 
 
+import io.swagger.annotations.Api;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2021-07-05
  */
 @RestController
+@Api(tags = "文件夹模块")
 @RequestMapping("/dir")
 public class DirController {
 
