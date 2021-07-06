@@ -43,7 +43,7 @@ public class UserController {
     @ApiOperation("登录")
     @PostMapping("/login")
     public ResultEntity login(@ApiParam("登录表单") @RequestBody @Valid LoginVo loginVo, HttpSession session, HttpServletResponse response) {
-        if (!CheckCodeUtil.isCheckCaptcha(loginVo.getUserEmail(), session)) {
+        if (!CheckCodeUtil.isCheckCaptcha(loginVo.getCheckCode(), session)) {
             return ResultUtil.error(401, "验证码不正确");
         }
 

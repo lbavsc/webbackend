@@ -52,7 +52,7 @@ public class FileEntity implements Serializable {
 
     @ApiModelProperty(value = "文件大小(KB计算)")
     @TableField("file_size")
-    private String fileSize;
+    private Long fileSize;
 
     @ApiModelProperty(value = "乐观锁")
     @TableField("version")

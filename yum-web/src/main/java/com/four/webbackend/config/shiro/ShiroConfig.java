@@ -51,7 +51,7 @@ public class ShiroConfig {
 
         // 用户相关
         filterRuleMap.put("/user/login","anon");
-        filterRuleMap.put("/user/regist","anon");
+        filterRuleMap.put("/user/register","anon");
 
         // 验证码
         filterRuleMap.put("/check_code","anon");

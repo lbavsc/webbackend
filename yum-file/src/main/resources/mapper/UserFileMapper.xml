@@ -8,6 +8,7 @@
         <result column="user_id" property="userId" />
         <result column="dir_id" property="dirId" />
         <result column="file_id" property="fileId" />
+        <result column="md5" property="md5" />
         <result column="version" property="version" />
         <result column="id_dalete" property="idDalete" />
         <result column="gmt_create" property="gmtCreate" />

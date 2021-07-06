@@ -2,6 +2,7 @@ package com.four.webbackend.service;
 
 import com.four.webbackend.entity.FileEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.four.webbackend.model.UpdateFileVo;
 
 /**
  * <p>
@@ -13,4 +14,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface FileService extends IService<FileEntity> {
 
+
+    boolean updateFile(String token, UpdateFileVo updateFileVo);
 }

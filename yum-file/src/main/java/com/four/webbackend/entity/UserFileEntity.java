@@ -46,6 +46,10 @@ public class UserFileEntity implements Serializable {
     @TableField("file_id")
     private Integer fileId;
 
+    @ApiModelProperty(value = "文件md5值")
+    @TableField("md5")
+    private String md5;
+
     @ApiModelProperty(value = "乐观锁")
     @TableField("version")
     @Version

@@ -13,4 +13,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface DirService extends IService<DirEntity> {
 
+
+    boolean isExistDir(String token, Integer dirId);
 }

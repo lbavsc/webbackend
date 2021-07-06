@@ -13,4 +13,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface UserFileService extends IService<UserFileEntity> {
 
+    boolean isExist(String token, String fileMd5);
+
 }
