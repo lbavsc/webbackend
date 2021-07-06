@@ -10,12 +10,14 @@ import com.four.webbackend.mapper.UserMapper;
 import com.four.webbackend.model.FriendshipDto;
 import com.four.webbackend.service.FriendshipService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.four.webbackend.util.TokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,18 +42,23 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
     }
 
     @Override
-    public List<FriendshipDto> listBuddy(String uuid) {
+    public List<FriendshipDto> listBuddy(String token) {
+        HttpServletResponse response = getResponse();
+        String uuid = TokenUtil.getAccount(token);
+        Integer userId = TokenUtil.getUserId(token);
         List<FriendshipDto> rest = new ArrayList<>();
         UserEntity userEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
                 .select("user_id")
                 .eq("user_uuid", uuid));
 
         if (userEntity == null || userEntity.getUserId() == null) {
-            HttpServletResponse response = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
             GlobalExceptionHandler.responseError(response, "没有uuid为" + uuid + "的用户");
             return null;
         }
-        int userId = userEntity.getUserId();
+        if (!userEntity.getUserId().equals(userId)) {
+            GlobalExceptionHandler.responseError(response, "token错误,uuid与userId不匹配");
+            return null;
+        }
 
 
         List<FriendshipEntity> friendshipEntities = baseMapper.selectList(new QueryWrapper<FriendshipEntity>()
@@ -65,11 +72,11 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
             FriendshipDto friendshipDto = new FriendshipDto();
             UserEntity temp = null;
 
-            if (userId == entity.getUser1Id()) {
+            if (userId.equals(entity.getUser1Id())) {
                 temp = userMapper.selectOne(new QueryWrapper<UserEntity>()
                         .select("user_uuid", "email", "userName")
                         .eq("user2_id", entity.getUser2Id()));
-            } else if (userId == entity.getUser2Id()) {
+            } else if (userId.equals(entity.getUser2Id())) {
                 temp = userMapper.selectOne(new QueryWrapper<UserEntity>()
                         .select("user_uuid", "email", "userName")
                         .eq("user1_id", entity.getUser1Id()));
@@ -88,14 +95,21 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
     }
 
     @Override
-    public void addBuddy(String uuid, String identifier) {
+    public boolean addBuddy(String token, String identifier) {
         HttpServletResponse response = getResponse();
+        String uuid = TokenUtil.getAccount(token);
+        Integer userId = TokenUtil.getUserId(token);
         UserEntity userEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
                 .select("user_id")
                 .eq("user_uuid", uuid));
         if (userEntity == null) {
             GlobalExceptionHandler.responseError(response, "没有uuid为" + uuid + "的用户");
-            return;
+            return false;
+        }
+
+        if (!userEntity.getUserId().equals(userId)) {
+            GlobalExceptionHandler.responseError(response, "token错误,uuid与userId不匹配");
+            return false;
         }
         UserEntity buddyEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
                 .select("user_id")
@@ -109,7 +123,7 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
 
         if (listBuddy(uuid).size() > 0) {
             GlobalExceptionHandler.responseError(response, "对方已是您的好友");
-            return;
+            return false;
         }
         FriendshipEntity friendshipEntity = new FriendshipEntity();
         friendshipEntity.setUser1Id(userEntity.getUserId());
@@ -118,24 +132,32 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
         friendshipEntity.setStatus(FriendshipConstant.UNDER_REVIEW);
 
         baseMapper.insert(friendshipEntity);
+        return true;
     }
 
     @Override
-    public void deleteBuddy(String uuid, String uid) {
+    public boolean deleteBuddy(String token, String uid) {
+        String uuid = TokenUtil.getAccount(token);
+        Integer userId = TokenUtil.getUserId(token);
+
         HttpServletResponse response = getResponse();
         UserEntity userEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
                 .select("user_id")
                 .eq("user_uuid", uuid));
         if (userEntity == null) {
             GlobalExceptionHandler.responseError(response, "没有uuid为" + uuid + "的用户");
-            return;
+            return false;
+        }
+        if (!userEntity.getUserId().equals(userId)) {
+            GlobalExceptionHandler.responseError(response, "token错误,uuid与userId不匹配");
+            return false;
         }
         UserEntity buddyEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
                 .select("user_id")
                 .eq("user_uuid", uid));
         if (buddyEntity == null) {
             GlobalExceptionHandler.responseError(response, "没有uuid为" + uid + "的用户");
-            return;
+            return false;
         }
         baseMapper.delete(new QueryWrapper<FriendshipEntity>()
                 .eq("user1_id", userEntity.getUserId())
@@ -145,6 +167,7 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
                             .eq("user2_id", userEntity.getUserId());
                 }));
 
+        return true;
     }
 
     private HttpServletResponse getResponse() {

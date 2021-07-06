@@ -43,10 +43,13 @@ public class FriendshipController {
     @GetMapping("/listBuddy")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity listBuddy(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token) {
-        String uuid = TokenUtil.getAccount(token);
-        List<FriendshipDto> dtos = friendshipService.listBuddy(uuid);
+
+        List<FriendshipDto> dtos = friendshipService.listBuddy(token);
 
         if (dtos == null) {
+            return null;
+        }
+        if (dtos.size() == 0) {
             return ResultUtil.error(403, "无数据");
         }
 
@@ -58,20 +61,24 @@ public class FriendshipController {
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity addBuddy(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
                                  @ApiParam("人员的UUID或者邮箱") @RequestParam String uid) {
-        String uuid = TokenUtil.getAccount(token);
-        friendshipService.deleteBuddy(uuid, uid);
+
+        if (!friendshipService.deleteBuddy(token, uid)) {
+            return null;
+        }
 
         return ResultUtil.success();
     }
 
-    @ApiOperation("添加好友")
+    @ApiOperation("删除好友")
     @GetMapping("/deleteBuddy")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity deleteBuddy(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
-                                 @ApiParam("人员的UUID或者邮箱") @RequestParam String identifier) {
-        String uuid = TokenUtil.getAccount(token);
-        friendshipService.addBuddy(uuid, identifier);
+                                    @ApiParam("人员的UUID或者邮箱") @RequestParam String identifier) {
 
+        ;
+        if (!friendshipService.addBuddy(token, identifier)) {
+            return null;
+        }
         return ResultUtil.success();
     }
 

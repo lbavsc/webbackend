@@ -114,5 +114,14 @@ public class UserController {
         return ResultUtil.success();
     }
 
+    @ApiOperation("退出登录")
+    @PostMapping("/logout")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity logout(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token) {
+
+        userService.logout(token);
+        return ResultUtil.success();
+    }
+
 }
 

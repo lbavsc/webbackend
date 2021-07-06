@@ -26,8 +26,13 @@ import javax.validation.constraints.NotBlank;
 @Api(tags = "验证码相关接口")
 public class CheckCodeController {
 
+
+    private final MailSendUtil mailSend;
+
     @Autowired
-    MailSendUtil mailSend;
+    public CheckCodeController(MailSendUtil mailSend) {
+        this.mailSend = mailSend;
+    }
 
     /**
      * 获取验证码接口

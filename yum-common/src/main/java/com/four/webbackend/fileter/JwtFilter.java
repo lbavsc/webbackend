@@ -28,11 +28,12 @@ import javax.servlet.http.HttpServletResponse;
 public class JwtFilter extends BasicHttpAuthenticationFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtFilter.class);
+
     /**
      * 判断是否允许通过
      *
-     * @param request request
-     * @param response response
+     * @param request     request
+     * @param response    response
      * @param mappedValue mappedValue
      * @return 是否允许通过
      */
@@ -51,7 +52,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     /**
      * 是否进行登录请求
      *
-     * @param request request
+     * @param request  request
      * @param response response
      * @return 是否进行登录请求
      */
@@ -64,7 +65,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     /**
      * 创建shiro token
      *
-     * @param request request
+     * @param request  request
      * @param response response
      * @return shiro token
      */
@@ -80,7 +81,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     /**
      * isAccessAllowed为false时调用，验证失败
      *
-     * @param request request
+     * @param request  request
      * @param response response
      * @return isAccessAllowed为false时调用，验证失败
      */
@@ -94,9 +95,9 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     /**
      * shiro验证成功调用
      *
-     * @param token token
-     * @param subject subject
-     * @param request request
+     * @param token    token
+     * @param subject  subject
+     * @param request  request
      * @param response response
      * @return shiro验证成功调用
      * @throws Exception Exception
@@ -131,7 +132,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     /**
      * 拦截器的前置方法，此处进行跨域处理
      *
-     * @param request request
+     * @param request  request
      * @param response response
      * @return 是否运行通过
      * @throws Exception Exception
@@ -162,14 +163,14 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     /**
      * 刷新AccessToken，进行判断RefreshToken是否过期，未过期就返回新的AccessToken且继续正常访问
      *
-     * @param request request
+     * @param request  request
      * @param response response
      * @return 是否刷新token
      */
     private boolean refreshToken(ServletRequest request, ServletResponse response) {
         String token = ((HttpServletRequest) request).getHeader("token");
         String account = TokenUtil.getAccount(token);
-        String userType = TokenUtil.getUserType(token);
+        Integer userId = TokenUtil.getUserId(token);
         Long currentTime = TokenUtil.getCurrentTime(token);
         // 判断Redis中RefreshToken是否存在
         if (RedisUtil.hasKey(account)) {
@@ -177,13 +178,14 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
             Long currentTimeMillisRedis = (Long) RedisUtil.get(account);
             // 获取当前AccessToken中的时间戳，与RefreshToken的时间戳对比，如果当前时间戳一致，进行AccessToken刷新
             assert currentTimeMillisRedis != null;
+            assert userId != null;
             if (currentTimeMillisRedis.equals(currentTime)) {
                 // 获取当前最新时间戳
                 Long currentTimeMillis = System.currentTimeMillis();
                 RedisUtil.set(account, currentTimeMillis,
                         TokenUtil.REFRESH_EXPIRE_TIME);
                 // 刷新AccessToken，设置时间戳为当前最新时间戳
-                token = TokenUtil.sign(account, currentTimeMillis);
+                token = TokenUtil.sign(account, userId, currentTimeMillis);
                 HttpServletResponse httpServletResponse = (HttpServletResponse) response;
                 httpServletResponse.setHeader("Authorization", token);
                 httpServletResponse.setHeader("Access-Control-Expose-Headers", "Authorization, fileName");

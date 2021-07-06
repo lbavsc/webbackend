@@ -58,7 +58,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         if (!passwd.equals(userEntity.getPassword())) {
             return false;
         }
-        String token = creatToken(userEntity.getUserName());
+        String token = creatToken(userEntity.getUserName(), userEntity.getUserId());
 
         response.setHeader("Authorization", token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
@@ -75,7 +75,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         }
         UserDto userDto = new UserDto();
         BeanUtils.copyProperties(userEntity, userDto);
-
+        userDto.setUsed(0L);
+        userDto.setTotalCapacity(10737418240L);
         return userDto;
     }
 
@@ -109,9 +110,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         return baseMapper.updateById(userEntity) == 1;
     }
 
-    private String creatToken(String userUuId) {
+    @Override
+    public void logout(String token) {
+        Integer userId = TokenUtil.getUserId(token);
+        UserEntity userEntity = baseMapper.selectById(userId);
+        if (userEntity == null) {
+            return;
+        }
+        if (RedisUtil.hasKey(userEntity.getUserName())) {
+            RedisUtil.del(userEntity.getUserName());
+        }
+    }
+
+    private String creatToken(String userUuId, int userId) {
         Long currentTimeMillis = System.currentTimeMillis();
-        String token = TokenUtil.sign(userUuId, currentTimeMillis);
+        String token = TokenUtil.sign(userUuId, userId, currentTimeMillis);
         RedisUtil.set(userUuId, currentTimeMillis, TokenUtil.REFRESH_EXPIRE_TIME);
         return token;
     }

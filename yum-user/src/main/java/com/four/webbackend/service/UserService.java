@@ -25,4 +25,6 @@ public interface UserService extends IService<UserEntity> {
     UserDto modify(UserVo userVo, String uuid);
 
     boolean modifyPwd(PasswdVo passwdVo, String uuid);
+
+    void logout(String token);
 }

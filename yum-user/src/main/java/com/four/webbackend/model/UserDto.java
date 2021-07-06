@@ -1,5 +1,6 @@
 package com.four.webbackend.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Data;
@@ -16,6 +17,7 @@ import java.io.Serializable;
  **/
 @Data
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserDto implements Serializable {
 
     private static final long serialVersionUID = -3948872611932143594L;
@@ -28,4 +30,10 @@ public class UserDto implements Serializable {
 
     @ApiModelProperty(value = "用户名")
     private String userName;
+
+    @ApiModelProperty(value = "总容量")
+    private Long totalCapacity;
+
+    @ApiModelProperty(value = "已使用容量")
+    private Long used;
 }

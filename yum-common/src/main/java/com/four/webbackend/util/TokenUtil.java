@@ -41,7 +41,7 @@ public class TokenUtil {
      * @param currentTime 过期时间
      * @return token
      */
-    public static String sign(String account, Long currentTime) {
+    public static String sign(String account, int userId, Long currentTime) {
 
         String token = null;
         try {
@@ -49,6 +49,7 @@ public class TokenUtil {
             token = JWT.create()
                     .withIssuer("signup")
                     .withClaim("account", account)
+                    .withClaim("userId", userId)
                     .withClaim("currentTime", currentTime)
                     .withExpiresAt(expireAt)
                     .sign(Algorithm.HMAC256(TOKEN_SECRET));
@@ -93,10 +94,10 @@ public class TokenUtil {
         }
     }
 
-    public static String getUserType(String token) {
+    public static Integer getUserId(String token) {
         try {
             DecodedJWT decodedJWT = JWT.decode(token);
-            return decodedJWT.getClaim("userType").asString();
+            return decodedJWT.getClaim("userId").asInt();
 
         } catch (JWTCreationException e) {
             return null;
