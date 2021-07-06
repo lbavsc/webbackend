@@ -1,10 +1,20 @@
 package com.four.webbackend.controller.file;
 
 
+import com.four.webbackend.model.CopyFileVo;
+import com.four.webbackend.model.DirDto;
+import com.four.webbackend.model.ResultEntity;
+import com.four.webbackend.service.DirService;
+import com.four.webbackend.util.ResultUtil;
 import io.swagger.annotations.Api;
-import org.springframework.web.bind.annotation.RequestMapping;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.apache.shiro.authz.annotation.Logical;
+import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
-import org.springframework.web.bind.annotation.RestController;
+import javax.validation.constraints.NotNull;
 
 /**
  * <p>
@@ -19,5 +29,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/dir")
 public class DirController {
 
+    private DirService dirService;
+
+    @Autowired
+    public DirController(DirService dirService) {
+        this.dirService = dirService;
+    }
+
+    @ApiOperation("查看文件夹内容")
+    @GetMapping("/getDirContent")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity getDirContent(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                      @RequestParam String dirId) {
+        DirDto dto = dirService.getDirContent(token, dirId);
+        return ResultUtil.success(dto);
+    }
 }
 

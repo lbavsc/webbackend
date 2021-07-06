@@ -3,6 +3,7 @@ package com.four.webbackend.service;
 import com.four.webbackend.entity.DirEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.four.webbackend.model.DeleteVo;
+import com.four.webbackend.model.DirDto;
 import com.four.webbackend.model.RenameFileOrDirVo;
 
 /**
@@ -21,4 +22,6 @@ public interface DirService extends IService<DirEntity> {
     boolean rename(String token, RenameFileOrDirVo renameFileOrDirVo);
 
     boolean deleteDir(String token, DeleteVo deleteVo);
+
+    DirDto getDirContent(String token, String dirId);
 }

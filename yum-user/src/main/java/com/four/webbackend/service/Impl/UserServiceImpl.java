@@ -122,6 +122,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         }
     }
 
+    @Override
+    public boolean forgotPwd(ForgotPwdVo forgotPwdVo) {
+        UserEntity userEntity = baseMapper.selectOne(new QueryWrapper<UserEntity>()
+                .eq("email", forgotPwdVo.getUserEmail()));
+        if (userEntity == null) {
+            return false;
+        }
+        String passwd = PwdToMd5.encrypt(forgotPwdVo.getPasswd(), userEntity.getUserName());
+        userEntity.setPassword(passwd);
+        baseMapper.updateById(userEntity);
+        return true;
+    }
+
+
     private String creatToken(String userUuId, int userId) {
         Long currentTimeMillis = System.currentTimeMillis();
         String token = TokenUtil.sign(userUuId, userId, currentTimeMillis);

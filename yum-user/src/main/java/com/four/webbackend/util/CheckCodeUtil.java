@@ -32,7 +32,7 @@ public class CheckCodeUtil {
         if (code == null) {
             return false;
         }
-        RedisUtil.del(email);
+
         return emailCode.equals(code);
     }
 }

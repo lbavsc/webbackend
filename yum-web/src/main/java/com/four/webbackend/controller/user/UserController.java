@@ -59,9 +59,7 @@ public class UserController {
         if (!CheckCodeUtil.isEmailCheck(registVo.getUserEmail(), registVo.getCheckCode())) {
             return ResultUtil.error(401, "验证码不正确");
         }
-        if (!CheckCodeUtil.isEmailCheck(registVo.getUserEmail(), registVo.getCheckCode())) {
-            return ResultUtil.error(401, "验证码不正确");
-        }
+
 
         userService.regist(registVo);
 
@@ -114,6 +112,22 @@ public class UserController {
         return ResultUtil.success();
     }
 
+    @ApiOperation("忘记密码")
+    @PostMapping("/forgot/pwd")
+    public ResultEntity forgotPwd(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                  @ApiParam("修改密码表单") @RequestBody ForgotPwdVo forgotPwdVo) {
+
+        if (!CheckCodeUtil.isEmailCheck(forgotPwdVo.getUserEmail(), forgotPwdVo.getCheckCode())) {
+            return ResultUtil.error(401, "验证码不正确");
+        }
+        if (!userService.forgotPwd(forgotPwdVo)) {
+            return ResultUtil.error(403, "修改失败,请重试");
+        }
+
+
+        return ResultUtil.success();
+    }
+
     @ApiOperation("退出登录")
     @PostMapping("/logout")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
@@ -122,6 +136,8 @@ public class UserController {
         userService.logout(token);
         return ResultUtil.success();
     }
+
+
 
 }
 
