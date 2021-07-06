@@ -18,7 +18,8 @@ public class CheckCodeUtil {
     public static Boolean isCheckCaptcha(String code, HttpSession session) {
         String sessionCode;
         sessionCode = String.valueOf(session.getAttribute(ValidateCodeUtil.SESSION_KEY)).toLowerCase();
-        logger.info("session里的验证码：" + sessionCode);
+        logger.info("session里的验证码：" + sessionCode  + "\nsession: " + session.getId());
+
         String receivedCode = code.toLowerCase();
         logger.info("用户的验证码：" + receivedCode);
         //验证码验证后进行失效处理
@@ -31,6 +32,7 @@ public class CheckCodeUtil {
         if (code == null) {
             return false;
         }
+        RedisUtil.del(email);
         return emailCode.equals(code);
     }
 }

@@ -101,8 +101,18 @@ public class FileController {
                 return null;
             }
         }
+        return ResultUtil.success();
+    }
 
+    @ApiOperation("复制文件")
+    @PostMapping("/copyFile")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity copyFile(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                               CopyFileVo copyFileVo) {
 
+        if (!fileService.copyFile(token, copyFileVo)) {
+            return null;
+        }
         return ResultUtil.success();
     }
 

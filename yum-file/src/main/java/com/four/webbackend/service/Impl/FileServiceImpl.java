@@ -8,6 +8,7 @@ import com.four.webbackend.handler.GlobalExceptionHandler;
 import com.four.webbackend.mapper.FileMapper;
 
 import com.four.webbackend.mapper.UserFileMapper;
+import com.four.webbackend.model.CopyFileVo;
 import com.four.webbackend.model.MobileFileVo;
 import com.four.webbackend.model.RenameFileOrDirVo;
 import com.four.webbackend.model.UpdateFileVo;
@@ -98,6 +99,28 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
         // FIXME: 2021/7/6 存在设计漏洞,修改一个文件名,其他同用户同文件名也会变化,文件名不应该存储在文件信息表里,应该存在文件-用户关系表里,这样的话,同文件在不同文件夹也可拥有不同文件名
         fileEntity.setFileName(renameFileOrDirVo.getNewName());
         return baseMapper.updateById(fileEntity) == 1;
+    }
+
+    @Override
+    public boolean copyFile(String token, CopyFileVo copyFileVo) {
+        HttpServletResponse response = getResponse();
+        Integer userId = TokenUtil.getUserId(token);
+        UserFileEntity userFileEntity = userFileMapper.selectOne(new QueryWrapper<UserFileEntity>()
+                .eq("file_id", copyFileVo.getFileId())
+                .eq("user_id", userId)
+                .eq("dir_id", copyFileVo.getDirSourceId()));
+
+
+        if (userFileEntity == null) {
+            GlobalExceptionHandler.responseError(response, "没有该文件");
+            return false;
+        }
+        userFileEntity.setUserFileId(null);
+        userFileEntity.setDirId(copyFileVo.getDirFromId());
+        userFileMapper.insert(userFileEntity);
+
+
+        return false;
     }
 
 
