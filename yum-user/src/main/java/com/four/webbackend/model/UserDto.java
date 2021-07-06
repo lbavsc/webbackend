@@ -36,4 +36,7 @@ public class UserDto implements Serializable {
 
     @ApiModelProperty(value = "已使用容量")
     private Long used;
+
+    @ApiModelProperty(value = "根目录id")
+    private Integer rootDir;
 }

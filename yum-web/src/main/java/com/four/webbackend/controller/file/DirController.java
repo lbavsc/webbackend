@@ -29,7 +29,7 @@ import javax.validation.constraints.NotNull;
 @RequestMapping("/dir")
 public class DirController {
 
-    private DirService dirService;
+    private final DirService dirService;
 
     @Autowired
     public DirController(DirService dirService) {

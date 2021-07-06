@@ -1,8 +1,10 @@
 package com.four.webbackend.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.four.webbackend.entity.DirEntity;
 import com.four.webbackend.entity.UserEntity;
 import com.four.webbackend.handler.GlobalExceptionHandler;
+import com.four.webbackend.mapper.DirMapper;
 import com.four.webbackend.mapper.UserMapper;
 import com.four.webbackend.model.*;
 import com.four.webbackend.service.UserService;
@@ -11,6 +13,7 @@ import com.four.webbackend.util.*;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.shiro.authc.AccountException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
@@ -25,6 +28,13 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> implements UserService {
+
+    private final DirMapper dirMapper;
+
+    @Autowired
+    public UserServiceImpl(DirMapper dirMapper) {
+        this.dirMapper = dirMapper;
+    }
 
     @Override
     public void regist(RegistVo registVo) {
@@ -42,6 +52,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
                 .password(PwdToMd5.encrypt(registVo.getPasswd(), registVo.getUserName()))
                 .build();
         baseMapper.insert(userEntity);
+
+        userEntity = baseMapper.selectOne(new QueryWrapper<UserEntity>()
+                .eq("email", registVo.getUserEmail()));
+
+        DirEntity dirEntity = new DirEntity();
+        dirEntity.setDirName("/");
+        dirEntity.setUserId(userEntity.getUserId());
+        dirEntity.setOwnedDirId(0);
+
+        dirMapper.insert(dirEntity);
     }
 
     @Override
@@ -73,10 +93,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         if (userEntity == null) {
             return null;
         }
+
+        DirEntity dirEntity = dirMapper.selectOne(new QueryWrapper<DirEntity>()
+                .eq("user_id", userEntity.getUserId())
+                .eq("owned_dir_id", 0));
         UserDto userDto = new UserDto();
         BeanUtils.copyProperties(userEntity, userDto);
         userDto.setUsed(0L);
         userDto.setTotalCapacity(10737418240L);
+        userDto.setRootDir(dirEntity.getDirId());
         return userDto;
     }
 
