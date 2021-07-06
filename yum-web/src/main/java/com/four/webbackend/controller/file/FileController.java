@@ -16,6 +16,7 @@ import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 
 /**
@@ -90,13 +91,13 @@ public class FileController {
     @PostMapping("/rename")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity rename(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
-                                   RenameFileOrDirVo renameFileOrDirVo) {
+                               RenameFileOrDirVo renameFileOrDirVo) {
 
         if (renameFileOrDirVo.getIsDir()) {
             if (!dirService.rename(token, renameFileOrDirVo)) {
                 return null;
             }
-        } else  {
+        } else {
             if (!fileService.rename(token, renameFileOrDirVo)) {
                 return null;
             }
@@ -108,10 +109,44 @@ public class FileController {
     @PostMapping("/copyFile")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity copyFile(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
-                               CopyFileVo copyFileVo) {
+                                 CopyFileVo copyFileVo) {
 
         if (!fileService.copyFile(token, copyFileVo)) {
             return null;
+        }
+        return ResultUtil.success();
+    }
+
+    @ApiOperation("下载文件")
+    @PostMapping("/downloadFile")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity downloadFile(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                     @ApiParam("文件ID") @RequestParam Integer userFileId,
+                                     HttpServletResponse response) {
+
+        if (fileService.downloadFile(token, response, userFileId)) {
+//            return null;
+            return ResultUtil.success("下载文件成功");
+        }
+        return ResultUtil.error(403, "发生错误");
+    }
+
+    @ApiOperation("删除文件或文件夹")
+    @PostMapping("/deleteFile")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity deleteFile(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                   @RequestBody DeleteFileVo deleteFileVo) {
+
+        for (DeleteVo deleteVo : deleteFileVo.getDeleteList()) {
+            if (deleteVo.getIsDir()) {
+                if (!dirService.deleteDir(token, deleteVo)) {
+                    return null;
+                }
+            } else {
+                if (!fileService.deleteFile(token, deleteVo)) {
+                    return null;
+                }
+            }
         }
         return ResultUtil.success();
     }

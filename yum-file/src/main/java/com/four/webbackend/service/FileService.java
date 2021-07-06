@@ -2,10 +2,9 @@ package com.four.webbackend.service;
 
 import com.four.webbackend.entity.FileEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.four.webbackend.model.CopyFileVo;
-import com.four.webbackend.model.MobileFileVo;
-import com.four.webbackend.model.RenameFileOrDirVo;
-import com.four.webbackend.model.UpdateFileVo;
+import com.four.webbackend.model.*;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * <p>
@@ -25,4 +24,9 @@ public interface FileService extends IService<FileEntity> {
     boolean rename(String token, RenameFileOrDirVo renameFileOrDirVo);
 
     boolean copyFile(String token, CopyFileVo copyFileVo);
+
+    boolean downloadFile(String token, HttpServletResponse response, Integer userFileId);
+
+    boolean deleteFile(String token, DeleteVo deleteVo);
+
 }

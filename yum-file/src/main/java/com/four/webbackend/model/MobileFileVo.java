@@ -17,7 +17,7 @@ public class MobileFileVo implements Serializable {
 
     private static final long serialVersionUID = -9054014883323715223L;
 
-    private Integer fileId;
+    private Integer userFileId;
 
     private Integer dirSourceId;
 

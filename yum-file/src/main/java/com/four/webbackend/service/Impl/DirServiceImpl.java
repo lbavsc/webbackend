@@ -1,13 +1,18 @@
 package com.four.webbackend.service.Impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.four.webbackend.entity.DirEntity;
+import com.four.webbackend.entity.UserFileEntity;
 import com.four.webbackend.handler.GlobalExceptionHandler;
 import com.four.webbackend.mapper.DirMapper;
+import com.four.webbackend.mapper.UserFileMapper;
+import com.four.webbackend.model.DeleteVo;
 import com.four.webbackend.model.RenameFileOrDirVo;
 import com.four.webbackend.service.DirService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.four.webbackend.util.TokenUtil;
 import jdk.nashorn.internal.parser.Token;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -25,6 +30,13 @@ import java.util.Objects;
  */
 @Service
 public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements DirService {
+
+    private UserFileMapper userFileMapper;
+
+    @Autowired
+    public DirServiceImpl(UserFileMapper userFileMapper) {
+        this.userFileMapper = userFileMapper;
+    }
 
     @Override
     public boolean isExistDir(String token, Integer dirId) {
@@ -45,6 +57,31 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
 
         dirEntity.setDirName(renameFileOrDirVo.getNewName());
         return baseMapper.updateById(dirEntity) == 1;
+    }
+
+    @Override
+    public boolean deleteDir(String token, DeleteVo deleteVo) {
+        HttpServletResponse response = getResponse();
+        Integer userId = TokenUtil.getUserId(token);
+        DirEntity dirEntity = baseMapper.selectById(deleteVo.getIsDir());
+
+        if (dirEntity == null || !dirEntity.getUserId().equals(userId)) {
+            GlobalExceptionHandler.responseError(response, "没有该目录");
+            return false;
+        }
+
+        int count = userFileMapper.selectCount(new QueryWrapper<UserFileEntity>()
+        .eq("user_id", userId)
+        .eq("dir_id", dirEntity.getDirId()));
+
+        if (count > 0) {
+            GlobalExceptionHandler.responseError(response, "只能删除空文件夹");
+            return false;
+        }
+
+        baseMapper.deleteById(deleteVo.getFileId());
+        return true;
+
     }
 
     private HttpServletResponse getResponse() {

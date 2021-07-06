@@ -16,7 +16,7 @@ public class CopyFileVo implements Serializable {
 
     private static final long serialVersionUID = 2154480122129260280L;
 
-    private Integer fileId;
+    private Integer userFileId;
 
     private Integer dirSourceId;
 

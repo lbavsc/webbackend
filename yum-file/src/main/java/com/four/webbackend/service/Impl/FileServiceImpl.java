@@ -8,10 +8,7 @@ import com.four.webbackend.handler.GlobalExceptionHandler;
 import com.four.webbackend.mapper.FileMapper;
 
 import com.four.webbackend.mapper.UserFileMapper;
-import com.four.webbackend.model.CopyFileVo;
-import com.four.webbackend.model.MobileFileVo;
-import com.four.webbackend.model.RenameFileOrDirVo;
-import com.four.webbackend.model.UpdateFileVo;
+import com.four.webbackend.model.*;
 import com.four.webbackend.service.FileService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
@@ -19,17 +16,21 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.four.webbackend.util.TokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.MessageDigest;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.IntFunction;
 
 /**
  * <p>
@@ -61,12 +62,9 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
     @Override
     public boolean mobileFile(String token, MobileFileVo mobileFileVo) {
         HttpServletResponse response = getResponse();
-        UserFileEntity userFileEntity = userFileMapper.selectOne(new QueryWrapper<UserFileEntity>()
-                .eq("user_id", TokenUtil.getUserId(token))
-                .eq("dir_id", mobileFileVo.getDirSourceId())
-                .eq("file_id", mobileFileVo.getFileId()));
+        UserFileEntity userFileEntity = userFileMapper.selectById(mobileFileVo.getUserFileId());
 
-        if (userFileEntity == null) {
+        if (userFileEntity == null || !userFileEntity.getUserId().equals(TokenUtil.getUserId(token))) {
             GlobalExceptionHandler.responseError(response, "该目录不存在此文件");
             return false;
         }
@@ -80,18 +78,16 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
     public boolean rename(String token, RenameFileOrDirVo renameFileOrDirVo) {
         Integer userId = TokenUtil.getUserId(token);
         HttpServletResponse response = getResponse();
-        FileEntity fileEntity = baseMapper.selectById(renameFileOrDirVo.getObjectId());
+        UserFileEntity userFileEntity = userFileMapper.selectById(renameFileOrDirVo.getObjectId());
 
-        if (fileEntity == null) {
+        if (userFileEntity == null || userFileEntity.getUserId().equals(userId)) {
             GlobalExceptionHandler.responseError(response, "没有该文件");
             return false;
         }
 
-        int count = userFileMapper.selectCount(new QueryWrapper<UserFileEntity>()
-                .eq("user_id", userId)
-                .eq("file_id", renameFileOrDirVo.getObjectId()));
+        FileEntity fileEntity = baseMapper.selectById(userFileEntity.getFileId());
 
-        if (count <= 0) {
+        if (fileEntity == null) {
             GlobalExceptionHandler.responseError(response, "没有该文件");
             return false;
         }
@@ -105,22 +101,57 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
     public boolean copyFile(String token, CopyFileVo copyFileVo) {
         HttpServletResponse response = getResponse();
         Integer userId = TokenUtil.getUserId(token);
-        UserFileEntity userFileEntity = userFileMapper.selectOne(new QueryWrapper<UserFileEntity>()
-                .eq("file_id", copyFileVo.getFileId())
-                .eq("user_id", userId)
-                .eq("dir_id", copyFileVo.getDirSourceId()));
+        UserFileEntity userFileEntity = userFileMapper.selectById(copyFileVo.getUserFileId());
 
-
-        if (userFileEntity == null) {
+        if (userFileEntity == null || userFileEntity.getUserId().equals(userId)) {
             GlobalExceptionHandler.responseError(response, "没有该文件");
             return false;
         }
+
         userFileEntity.setUserFileId(null);
         userFileEntity.setDirId(copyFileVo.getDirFromId());
         userFileMapper.insert(userFileEntity);
 
 
         return false;
+    }
+
+    @Override
+    public boolean downloadFile(String token, HttpServletResponse response, Integer userFileId) {
+
+        UserFileEntity userFileEntity = userFileMapper.selectById(userFileId);
+
+        if (userFileEntity == null || !userFileEntity.getUserId().equals(TokenUtil.getUserId(token))) {
+            GlobalExceptionHandler.responseError(response, "没有该文件");
+            return false;
+        }
+        FileEntity fileEntity = baseMapper.selectById(userFileEntity.getFileId());
+
+        if (fileEntity == null) {
+            GlobalExceptionHandler.responseError(response, "没有该文件");
+            userFileMapper.deleteById(userFileId);
+            return false;
+        }
+        // TODO: 2021/7/6 从openstack里获取到文件,然后发送给前端
+
+        return true;
+    }
+
+    @Override
+    public boolean deleteFile(String token, DeleteVo deleteVo) {
+        HttpServletResponse response = getResponse();
+        Integer userId = TokenUtil.getUserId(token);
+
+        UserFileEntity userFileEntity = userFileMapper.selectById(deleteVo.getFileId());
+
+        if (userFileEntity == null || !userFileEntity.getUserId().equals(userId)) {
+            GlobalExceptionHandler.responseError(response, "没有id为" + deleteVo.getFileId() + "的文件");
+            return false;
+        }
+
+        userFileMapper.deleteById(userFileEntity);
+        return true;
+
     }
 
 
