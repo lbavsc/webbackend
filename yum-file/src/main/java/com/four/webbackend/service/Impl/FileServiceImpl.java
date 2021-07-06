@@ -154,6 +154,33 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
 
     }
 
+    @Override
+    public FileInfoDto getFileInfo(String token, Integer userFileId) {
+        FileInfoDto fileInfoDto = new FileInfoDto();
+        HttpServletResponse response = getResponse();
+        UserFileEntity userFileEntity = userFileMapper.selectById(userFileId);
+
+        if (userFileEntity == null || !userFileEntity.getUserId().equals(TokenUtil.getUserId(token))) {
+            GlobalExceptionHandler.responseError(response, "无此文件");
+            return null;
+        }
+
+        FileEntity fileEntity = baseMapper.selectById(userFileEntity.getFileId());
+
+        if (fileEntity == null) {
+            GlobalExceptionHandler.responseError(response, "无此文件");
+            userFileMapper.deleteById(userFileEntity);
+            return null;
+        }
+
+        fileInfoDto.setUserFileId(userFileEntity.getUserFileId());
+        fileInfoDto.setFileName(fileEntity.getFileName());
+        fileInfoDto.setFileSize(fileEntity.getFileSize());
+        fileInfoDto.setFileType(fileEntity.getFileType());
+
+        return fileInfoDto;
+    }
+
 
     /**
      * 上传带文件

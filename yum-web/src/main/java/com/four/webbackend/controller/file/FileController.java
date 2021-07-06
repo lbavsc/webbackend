@@ -151,5 +151,18 @@ public class FileController {
         return ResultUtil.success();
     }
 
+    @ApiOperation("查看文件信息")
+    @GetMapping("/getFileInfo")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity getFileInfo(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                   @RequestParam Integer fileId) {
+
+        FileInfoDto dto = fileService.getFileInfo(token,fileId);
+        if (dto == null) {
+            return null;
+        }
+        return ResultUtil.success(dto);
+    }
+
 }
 

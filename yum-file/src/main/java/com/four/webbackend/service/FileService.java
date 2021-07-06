@@ -29,4 +29,5 @@ public interface FileService extends IService<FileEntity> {
 
     boolean deleteFile(String token, DeleteVo deleteVo);
 
+    FileInfoDto getFileInfo(String token, Integer userFileId);
 }
