@@ -2,6 +2,7 @@ package com.four.webbackend.service;
 
 import com.four.webbackend.entity.ShareLinkEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.four.webbackend.model.ShareVo;
 
 /**
  * <p>
@@ -13,4 +14,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface ShareLinkService extends IService<ShareLinkEntity> {
 
+
+    String share(String token, ShareVo shareVo);
 }

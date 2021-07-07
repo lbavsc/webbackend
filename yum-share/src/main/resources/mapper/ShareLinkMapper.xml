@@ -9,6 +9,7 @@
         <result column="link" property="link" />
         <result column="file_id" property="fileId" />
         <result column="is_dir" property="isDir" />
+        <result column="expire" property="expire" />
         <result column="version" property="version" />
         <result column="id_dalete" property="idDalete" />
         <result column="gmt_create" property="gmtCreate" />

@@ -50,6 +50,10 @@ public class ShareLinkEntity implements Serializable {
     @TableField("is_dir")
     private Boolean isDir;
 
+    @ApiModelProperty(value = "过期时间")
+    @TableField("expire")
+    private Date expire;
+
     @ApiModelProperty(value = "乐观锁")
     @TableField("version")
     @Version
