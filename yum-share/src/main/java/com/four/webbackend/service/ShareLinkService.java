@@ -21,4 +21,6 @@ public interface ShareLinkService extends IService<ShareLinkEntity> {
     String share(String token, ShareVo shareVo);
 
     List<ShareListDto> listShare(String token);
+
+    boolean recellShare(String token, Integer shareId);
 }

@@ -14,6 +14,7 @@ import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -64,6 +65,19 @@ public class ShareLinkController {
 
 
         return ResultUtil.success(shareListVos);
+    }
+
+    @ApiOperation("取消分享")
+    @GetMapping("/recellShare")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity recellShare(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                    @RequestParam @NotEmpty(message = "分享id不能为空") Integer shareId) {
+
+        if (!shareLinkService.recellShare(token, shareId)) {
+            return null;
+        }
+
+        return ResultUtil.success();
     }
 }
 

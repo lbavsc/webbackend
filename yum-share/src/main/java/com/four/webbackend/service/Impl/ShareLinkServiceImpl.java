@@ -138,6 +138,21 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
 
     }
 
+    @Override
+    public boolean recellShare(String token, Integer shareId) {
+        HttpServletResponse response = getResponse();
+        ShareLinkEntity shareLinkEntity = baseMapper.selectById(shareId);
+        Integer userId = TokenUtil.getUserId(token);
+
+        if (shareLinkEntity == null || !shareLinkEntity.getUserId().equals(userId)) {
+            GlobalExceptionHandler.responseError(response, "没有该分享链接");
+            return false;
+        }
+
+        return baseMapper.deleteById(shareId) == 1;
+
+    }
+
 
     private Date getExpireDate(Integer expire) {
         Date date;
