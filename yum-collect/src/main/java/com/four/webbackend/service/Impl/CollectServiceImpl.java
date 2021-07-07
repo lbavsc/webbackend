@@ -54,6 +54,8 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, CollectEntity
             collectDto.setFileName(fileEntity.getFileName());
             collectDto.setFileSize(fileEntity.getFileSize());
             collectDto.setFileType(fileEntity.getFileType());
+            collectDto.setCollectId(entity.getCollectId());
+
             dtos.add(collectDto);
         });
 
