@@ -85,10 +85,26 @@ public class ShareLinkController {
     @GetMapping("/get")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity getShareUrlContent(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
-                                    @RequestParam @NotEmpty(message = "分享id不能为空") String shareUrl) {
+                                           @RequestParam @NotEmpty(message = "分享id不能为空") String shareUrl) {
 
         DirDto dto = shareLinkService.getShareUrlContent(token, shareUrl);
         if (dto == null) {
+            return null;
+        }
+
+        return ResultUtil.success();
+    }
+
+    @ApiOperation("将分享的文件保存到自己云盘")
+    @PostMapping("/saveShare")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity saveShare(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                  @RequestParam @NotEmpty(message = "分享id不能为空") String shareUrl,
+                                  @RequestParam @NotEmpty(message = "分享id不能为空") Integer objectId,
+                                  @RequestParam @NotEmpty(message = "目标目录") Integer targetDir,
+                                  @RequestParam @NotEmpty(message = "是否是文件夹") Boolean isDir) {
+
+        if (!shareLinkService.saveShare(token, shareUrl, objectId, targetDir, isDir)) {
             return null;
         }
 

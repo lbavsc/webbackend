@@ -158,7 +158,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
         Integer userId = TokenUtil.getUserId(token);
         DirDto dirDto = new DirDto();
         ShareLinkEntity shareLinkEntity = baseMapper.selectOne(new QueryWrapper<ShareLinkEntity>()
-        .eq("link", shareUrl));
+                .eq("link", shareUrl));
 
         boolean isPass = shareLinkEntity == null || (!shareLinkEntity.getTargetId().equals(0)) && !shareLinkEntity.getTargetId().equals(userId);
         if (isPass) {
@@ -166,7 +166,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
             return null;
         }
 
-        List<FileInfoDto> fileInfoDtos = new ArrayList<>() ;
+        List<FileInfoDto> fileInfoDtos = new ArrayList<>();
 
         if (shareLinkEntity.getIsDir()) {
             DirEntity dirEntity = dirMapper.selectById(shareLinkEntity.getFileId());
@@ -175,8 +175,8 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
                 return null;
             }
             List<UserFileEntity> userFileEntityList = userFileMapper.selectList(new QueryWrapper<UserFileEntity>()
-            .eq("dir_id", dirEntity.getDirId())
-            .eq("user_id", shareLinkEntity.getUserId()));
+                    .eq("dir_id", dirEntity.getDirId())
+                    .eq("user_id", shareLinkEntity.getUserId()));
 
             if (userFileEntityList == null || userFileEntityList.size() <= 0) {
                 GlobalExceptionHandler.responseError(response, "文件夹不存在");
@@ -210,6 +210,64 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
 
         return dirDto;
     }
+
+    @Override
+    public boolean saveShare(String token, String shareUrl, Integer objectId, Integer targetDir, Boolean isDir) {
+        HttpServletResponse response = getResponse();
+        Integer userId = TokenUtil.getUserId(token);
+        ShareLinkEntity shareLinkEntity = baseMapper.selectOne(new QueryWrapper<ShareLinkEntity>()
+                .eq("link", shareUrl));
+        boolean isPass = shareLinkEntity == null || (!shareLinkEntity.getTargetId().equals(0)) && !shareLinkEntity.getTargetId().equals(userId);
+        if (isPass) {
+            GlobalExceptionHandler.responseError(response, "没有该分享链接");
+            return false;
+        }
+
+        DirEntity dirEntity = dirMapper.selectById(targetDir);
+        if (dirEntity == null || !dirEntity.getUserId().equals(userId)) {
+            GlobalExceptionHandler.responseError(response, "目标目录ID不正确");
+            return false;
+        }
+
+        if (isDir) {
+            if (!shareLinkEntity.getFileId().equals(objectId)) {
+                GlobalExceptionHandler.responseError(response, "无权限");
+                return false;
+            }
+
+            List<UserFileEntity> userFileEntityList = userFileMapper.selectList(new QueryWrapper<UserFileEntity>()
+                    .eq("dir_id", objectId));
+
+            if (userFileEntityList == null || userFileEntityList.size() <= 0) {
+                GlobalExceptionHandler.responseError(response, "文件夹内无文件");
+                return false;
+            }
+
+
+            userFileEntityList.forEach(entity -> {
+                entity.setUserFileId(null);
+                entity.setDirId(targetDir);
+                entity.setUserId(userId);
+                userFileMapper.insert(entity);
+            });
+
+
+        } else {
+            UserFileEntity userFileEntity = userFileMapper.selectById(objectId);
+
+            if (userFileEntity == null) {
+                GlobalExceptionHandler.responseError(response, "无此文件");
+                return false;
+            }
+            userFileEntity.setUserFileId(null);
+            userFileEntity.setDirId(targetDir);
+            userFileEntity.setUserId(userId);
+            userFileMapper.insert(userFileEntity);
+        }
+
+        return true;
+    }
+
 
     private FileInfoDto getFileInfo(UserFileEntity userFileEntity, HttpServletResponse response) {
         FileEntity fileEntity = fileMapper.selectById(userFileEntity.getFileId());
