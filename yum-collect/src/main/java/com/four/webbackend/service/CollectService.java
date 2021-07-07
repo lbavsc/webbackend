@@ -19,4 +19,7 @@ public interface CollectService extends IService<CollectEntity> {
     IPage<CollectDto> listFavor(MyPageVo<CollectDto> myPageVo, String token);
 
     boolean favorFile(String token, Integer userFileId);
+
+    boolean recallFile(String token, Integer collectId);
+
 }

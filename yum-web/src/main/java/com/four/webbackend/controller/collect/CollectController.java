@@ -66,5 +66,16 @@ public class CollectController {
         }
         return ResultUtil.success();
     }
+
+    @ApiOperation("取消收藏")
+    @GetMapping("/recallFile")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity recallFile(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                  @ApiParam("文件id") @RequestParam Integer collectId) {
+        if (!collectService.recallFile(token, collectId)) {
+            return null;
+        }
+        return ResultUtil.success();
+    }
 }
 

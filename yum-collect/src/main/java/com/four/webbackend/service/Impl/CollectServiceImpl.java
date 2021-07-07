@@ -93,6 +93,17 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, CollectEntity
         return baseMapper.insert(collectEntity) == 1;
     }
 
+    @Override
+    public boolean recallFile(String token, Integer collectId) {
+        HttpServletResponse response = getResponse();
+        CollectEntity collectEntity = baseMapper.selectById(collectId);
+        if (collectEntity == null || !collectEntity.getUserId().equals(TokenUtil.getUserId(token))) {
+            GlobalExceptionHandler.responseError(response, "没有该文件的收藏信息");
+            return false;
+        }
+        return baseMapper.deleteById(collectId) == 1;
+    }
+
 
     private HttpServletResponse getResponse() {
         return ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
