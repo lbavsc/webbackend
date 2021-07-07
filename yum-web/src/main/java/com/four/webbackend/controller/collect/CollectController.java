@@ -54,5 +54,17 @@ public class CollectController {
         }
         return ResultUtil.success(infoDtoIpage.getRecords(), infoDtoIpage.getPages(), infoDtoIpage.getTotal());
     }
+
+
+    @ApiOperation("收藏文件")
+    @GetMapping("/favorFile")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity favorFile(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                  @ApiParam("文件id") @RequestParam Integer fileId) {
+        if (!collectService.favorFile(token, fileId)) {
+            return null;
+        }
+        return ResultUtil.success();
+    }
 }
 
