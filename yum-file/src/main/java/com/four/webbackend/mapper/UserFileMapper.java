@@ -19,4 +19,8 @@ import org.apache.ibatis.annotations.Mapper;
 public interface UserFileMapper extends BaseMapper<UserFileEntity> {
 
     IPage<UserFileEntity> selectPageVo(MyPageVo<FileInfoDto> myPageVo, Integer userId);
+
+    void restoreFile(Integer userId, Integer userFileId);
+
+    void realDel(Integer userId, Integer userFileId);
 }

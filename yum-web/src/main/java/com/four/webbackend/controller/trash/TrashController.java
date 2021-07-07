@@ -40,8 +40,8 @@ public class TrashController {
     @GetMapping("/listRecycle")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity listRecycle(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
-                                  @ApiParam("查询的页数") @RequestParam(required = false, defaultValue = "1") Integer current,
-                                  @ApiParam("一页的数量") @RequestParam(required = false, defaultValue = "10") Integer size) {
+                                    @ApiParam("查询的页数") @RequestParam(required = false, defaultValue = "1") Integer current,
+                                    @ApiParam("一页的数量") @RequestParam(required = false, defaultValue = "10") Integer size) {
         MyPageVo<FileInfoDto> myPageVo = new MyPageVo<>(current, size);
         IPage<FileInfoDto> infoDtoIpage = userFileService.listRecycle(myPageVo, token);
 
@@ -52,5 +52,21 @@ public class TrashController {
         return ResultUtil.success(infoDtoIpage.getRecords(), infoDtoIpage.getPages(), infoDtoIpage.getTotal());
     }
 
+    @ApiOperation("恢复文件")
+    @GetMapping("/restoreFile")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity restoreFile(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                    @ApiParam("文件id") @RequestParam Integer userFileId) {
+        userFileService.restoreFile(token, userFileId);
+        return ResultUtil.success();
+    }
 
+    @ApiOperation("彻底删除文件")
+    @GetMapping("/realDel")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity realDel(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                @ApiParam("文件id") @RequestParam Integer userFileId) {
+        userFileService.realDel(token, userFileId);
+        return ResultUtil.success();
+    }
 }

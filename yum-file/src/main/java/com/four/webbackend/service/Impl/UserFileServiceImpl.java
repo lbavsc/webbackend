@@ -82,6 +82,21 @@ public class UserFileServiceImpl extends ServiceImpl<UserFileMapper, UserFileEnt
         return rest;
     }
 
+    @Override
+    public void restoreFile(String token, Integer userFileId) {
+        Integer userId = TokenUtil.getUserId(token);
+
+        baseMapper.restoreFile(userId, userFileId);
+
+
+    }
+
+    @Override
+    public void realDel(String token, Integer userFileId) {
+        Integer userId = TokenUtil.getUserId(token);
+        baseMapper.realDel(userId, userFileId);
+
+    }
 
 
 }

@@ -14,6 +14,20 @@
         <result column="gmt_create" property="gmtCreate"/>
         <result column="gmt_update" property="gmtUpdate"/>
     </resultMap>
+    <update id="restoreFile">
+        UPDATE user_file
+        SET is_delete=0
+        WHERE is_delete = 1
+          AND user_id = #{userId}
+
+
+    </update>
+    <delete id="realDel">
+        DELETE
+        FROM user_file
+        WHERE is_delete = 1
+          AND user_id = #{userId}
+    </delete>
     <select id="selectPageVo" resultType="com.four.webbackend.entity.UserFileEntity">
         SELECT file_id, user_file_id
         FROM user_file

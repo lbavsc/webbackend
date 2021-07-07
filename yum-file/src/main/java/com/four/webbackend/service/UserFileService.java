@@ -19,4 +19,9 @@ public interface UserFileService extends IService<UserFileEntity> {
     boolean isExist(String token, String fileMd5);
 
     IPage<FileInfoDto> listRecycle(MyPageVo<FileInfoDto> myPageVo, String token);
+
+    void restoreFile(String token, Integer userFileId);
+
+    void realDel(String token, Integer userFileId);
+
 }
