@@ -4,15 +4,21 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.four.webbackend.entity.UserFileEntity">
-        <id column="user_file_id" property="userFileId" />
-        <result column="user_id" property="userId" />
-        <result column="dir_id" property="dirId" />
-        <result column="file_id" property="fileId" />
-        <result column="md5" property="md5" />
-        <result column="version" property="version" />
-        <result column="id_dalete" property="idDalete" />
-        <result column="gmt_create" property="gmtCreate" />
-        <result column="gmt_update" property="gmtUpdate" />
+        <id column="user_file_id" property="userFileId"/>
+        <result column="user_id" property="userId"/>
+        <result column="dir_id" property="dirId"/>
+        <result column="file_id" property="fileId"/>
+        <result column="md5" property="md5"/>
+        <result column="version" property="version"/>
+        <result column="is_delete" property="isDelete"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_update" property="gmtUpdate"/>
     </resultMap>
+    <select id="selectPageVo" resultType="com.four.webbackend.entity.UserFileEntity">
+        SELECT file_id, user_file_id
+        FROM user_file
+        WHERE is_delete = 1
+          AND user_id = #{userId}
+    </select>
 
 </mapper>

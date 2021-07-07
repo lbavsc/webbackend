@@ -1,15 +1,21 @@
 package com.four.webbackend.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.four.webbackend.entity.FileEntity;
 import com.four.webbackend.entity.UserFileEntity;
 import com.four.webbackend.mapper.FileMapper;
 import com.four.webbackend.mapper.UserFileMapper;
+import com.four.webbackend.model.FileInfoDto;
+import com.four.webbackend.model.MyPageVo;
 import com.four.webbackend.service.UserFileService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.four.webbackend.util.TokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -23,6 +29,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @Service
 public class UserFileServiceImpl extends ServiceImpl<UserFileMapper, UserFileEntity> implements UserFileService {
+
+    private final FileMapper fileMapper;
+
+    @Autowired
+    public UserFileServiceImpl(FileMapper fileMapper) {
+        this.fileMapper = fileMapper;
+    }
 
     @Override
     public boolean isExist(String token, String fileMd5) {
@@ -40,4 +53,35 @@ public class UserFileServiceImpl extends ServiceImpl<UserFileMapper, UserFileEnt
         }
         return rest;
     }
+
+    @Override
+    public IPage<FileInfoDto> listRecycle(MyPageVo<FileInfoDto> myPageVo, String token) {
+
+        IPage<UserFileEntity> iPage = baseMapper.selectPageVo(myPageVo, TokenUtil.getUserId(token));
+
+        IPage<FileInfoDto> rest = new Page<>();
+
+        rest.setTotal(iPage.getTotal());
+        rest.setPages(iPage.getPages());
+        rest.setSize(iPage.getSize());
+
+        List<FileInfoDto> fileInfoDtos = new ArrayList<>();
+
+        iPage.getRecords().forEach(entity -> {
+            FileEntity fileEntity = fileMapper.selectById(entity.getFileId());
+            FileInfoDto dto = new FileInfoDto();
+
+            dto.setUserFileId(entity.getUserFileId());
+            dto.setFileSize(fileEntity.getFileSize());
+            dto.setFileType(fileEntity.getFileType());
+            dto.setFileName(fileEntity.getFileName());
+
+            fileInfoDtos.add(dto);
+        });
+        rest.setRecords(fileInfoDtos);
+        return rest;
+    }
+
+
+
 }

@@ -10,7 +10,7 @@
         <result column="user_name" property="userName" />
         <result column="password" property="password" />
         <result column="version" property="version" />
-        <result column="id_dalete" property="idDalete" />
+        <result column="is_delete" property="isDelete" />
         <result column="gmt_create" property="gmtCreate" />
         <result column="gmt_update" property="gmtUpdate" />
     </resultMap>

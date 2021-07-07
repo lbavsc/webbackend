@@ -9,7 +9,7 @@
         <result column="user2_id" property="user2Id" />
         <result column="status" property="status" />
         <result column="version" property="version" />
-        <result column="id_dalete" property="idDalete" />
+        <result column="is_delete" property="isDelete" />
         <result column="gmt_create" property="gmtCreate" />
         <result column="gmt_update" property="gmtUpdate" />
     </resultMap>

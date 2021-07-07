@@ -1,11 +1,8 @@
 package com.four.webbackend.entity;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.util.Date;
-import com.baomidou.mybatisplus.annotation.Version;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableField;
 import java.io.Serializable;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -52,8 +49,9 @@ public class FriendshipEntity implements Serializable {
     private Integer version;
 
     @ApiModelProperty(value = "逻辑删除")
-    @TableField("id_dalete")
-    private Integer idDalete;
+    @TableField("is_delete")
+    @TableLogic
+    private Integer isDelete;
 
     @ApiModelProperty(value = "创建时间")
     @TableField("gmt_create")
