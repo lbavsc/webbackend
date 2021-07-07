@@ -32,7 +32,7 @@ public class TokenUtil {
     /**
      * 密钥盐
      */
-    private static final String TOKEN_SECRET = "docsvieub4543bcwie$#654*vsc";
+    private static final String TOKEN_SECRET = "erfwerugfhrtitur2332#@ED@E1sRDwaesdf43dfwer34qw";
 
 
     /**
@@ -66,7 +66,6 @@ public class TokenUtil {
      * @throws Exception
      */
     public static Boolean verify(String token) throws Exception {
-        logger.info("验证token");
         //创建token验证器
         JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(TOKEN_SECRET)).withIssuer("signup").build();
         DecodedJWT decodedJWT = jwtVerifier.verify(token);

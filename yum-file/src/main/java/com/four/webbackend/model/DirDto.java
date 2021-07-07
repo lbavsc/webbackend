@@ -17,6 +17,8 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DirDto implements Serializable {
 
+    private Integer parentId;
+
     private List<DirInfoDto> dirInfoDtos;
 
     private List<FileInfoDto> fileInfoDtos;

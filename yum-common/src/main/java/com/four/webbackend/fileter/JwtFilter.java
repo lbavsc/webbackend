@@ -5,6 +5,7 @@ import com.four.webbackend.handler.GlobalExceptionHandler;
 import com.four.webbackend.model.JwtToken;
 import com.four.webbackend.util.RedisUtil;
 import com.four.webbackend.util.TokenUtil;
+import org.apache.shiro.authc.AccountException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.BasicHttpAuthenticationFilter;
@@ -17,6 +18,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @author lbavsc
@@ -42,7 +44,6 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         try {
             return executeLogin(request, response);
         } catch (Exception e) {
-
             GlobalExceptionHandler.responseError(response, "shiro fail");
             return false;
         }
@@ -87,7 +88,13 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
      */
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) {
-        GlobalExceptionHandler.responseError(response, "token验证失败,请重新登陆");
+        try {
+            if (response.getWriter().toString() == null) {
+                GlobalExceptionHandler.responseError(response, "token验证失败,请重新登陆");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 
@@ -105,7 +112,6 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     @Override
     protected boolean onLoginSuccess(AuthenticationToken token, Subject subject, ServletRequest request, ServletResponse response) throws Exception {
         String jwttoken = (String) token.getPrincipal();
-        logger.info("shiro验证成功");
         if (jwttoken != null) {
             try {
                 if (TokenUtil.verify(jwttoken)) {

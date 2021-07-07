@@ -95,6 +95,8 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
         List<DirInfoDto> dirInfoDtos = new ArrayList<>();
         List<FileInfoDto> fileInfoDtos = new ArrayList<>();
         Integer userId = TokenUtil.getUserId(token);
+
+        DirEntity thisEntity = baseMapper.selectById(dirId);
         // 查询子目录
         List<DirEntity> dirEntities = baseMapper.selectList(new QueryWrapper<DirEntity>()
                 .eq("owned_dir_id", dirId)
@@ -128,8 +130,10 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
         }
 
         DirDto dto = new DirDto();
+        dto.setParentId(thisEntity.getOwnedDirId());
         dto.setDirInfoDtos(null);
         dto.setFileInfoDtos(null);
+
         if (dirInfoDtos.size() > 0) {
             dto.setDirInfoDtos(dirInfoDtos);
         }

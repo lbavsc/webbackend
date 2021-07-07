@@ -70,6 +70,7 @@ public class UserController {
     @GetMapping("/getInfo")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity info(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token) {
+
         UserDto dto = userService.info(TokenUtil.getAccount(token));
         if (dto == null) {
             return ResultUtil.error(403, "获取个人信息失败,请重试");
