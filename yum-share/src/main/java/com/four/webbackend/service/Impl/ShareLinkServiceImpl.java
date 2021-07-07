@@ -4,8 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.four.webbackend.entity.*;
 import com.four.webbackend.handler.GlobalExceptionHandler;
 import com.four.webbackend.mapper.*;
-import com.four.webbackend.model.ShareListDto;
-import com.four.webbackend.model.ShareVo;
+import com.four.webbackend.model.*;
 import com.four.webbackend.service.ShareLinkService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.four.webbackend.util.TokenUtil;
@@ -81,7 +80,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
             return null;
         }
 
-        if (shareVo.getIsDir()) {
+        if (!shareVo.getIsDir()) {
             UserFileEntity userFileEntity = userFileMapper.selectById(shareVo.getObjectId());
 
             if (userFileEntity == null || !userFileEntity.getUserId().equals(userId)) {
@@ -151,6 +150,79 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
 
         return baseMapper.deleteById(shareId) == 1;
 
+    }
+
+    @Override
+    public DirDto getShareUrlContent(String token, String shareUrl) {
+        HttpServletResponse response = getResponse();
+        Integer userId = TokenUtil.getUserId(token);
+        DirDto dirDto = new DirDto();
+        ShareLinkEntity shareLinkEntity = baseMapper.selectOne(new QueryWrapper<ShareLinkEntity>()
+        .eq("link", shareUrl));
+
+        boolean isPass = shareLinkEntity == null || (!shareLinkEntity.getTargetId().equals(0)) && !shareLinkEntity.getTargetId().equals(userId);
+        if (isPass) {
+            GlobalExceptionHandler.responseError(response, "没有该分享链接");
+            return null;
+        }
+
+        List<FileInfoDto> fileInfoDtos = new ArrayList<>() ;
+
+        if (shareLinkEntity.getIsDir()) {
+            DirEntity dirEntity = dirMapper.selectById(shareLinkEntity.getFileId());
+            if (dirEntity == null) {
+                GlobalExceptionHandler.responseError(response, "文件夹不存在");
+                return null;
+            }
+            List<UserFileEntity> userFileEntityList = userFileMapper.selectList(new QueryWrapper<UserFileEntity>()
+            .eq("dir_id", dirEntity.getDirId())
+            .eq("user_id", shareLinkEntity.getUserId()));
+
+            if (userFileEntityList == null || userFileEntityList.size() <= 0) {
+                GlobalExceptionHandler.responseError(response, "文件夹不存在");
+                return null;
+            }
+
+            for (UserFileEntity userFileEntity : userFileEntityList) {
+                FileInfoDto dto = getFileInfo(userFileEntity, response);
+                if (dto == null) {
+                    return null;
+                }
+                fileInfoDtos.add(dto);
+                dirDto.setFileInfoDtos(fileInfoDtos);
+            }
+
+        } else {
+            UserFileEntity userFileEntity = userFileMapper.selectById(shareLinkEntity.getFileId());
+
+            if (userFileEntity == null) {
+                GlobalExceptionHandler.responseError(response, "文件不存在");
+                return null;
+            }
+
+            FileInfoDto dto = getFileInfo(userFileEntity, response);
+            if (dto == null) {
+                return null;
+            }
+            fileInfoDtos.add(dto);
+            dirDto.setFileInfoDtos(fileInfoDtos);
+        }
+
+        return dirDto;
+    }
+
+    private FileInfoDto getFileInfo(UserFileEntity userFileEntity, HttpServletResponse response) {
+        FileEntity fileEntity = fileMapper.selectById(userFileEntity.getFileId());
+        if (fileEntity == null) {
+            GlobalExceptionHandler.responseError(response, "文件不存在");
+            return null;
+        }
+        FileInfoDto dto = new FileInfoDto();
+        dto.setFileName(fileEntity.getFileName());
+        dto.setUserFileId(userFileEntity.getUserFileId());
+        dto.setFileType(fileEntity.getFileType());
+        dto.setFileSize(fileEntity.getFileSize());
+        return dto;
     }
 
 

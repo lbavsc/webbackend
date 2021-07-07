@@ -35,7 +35,6 @@ public class ShareLinkEntity implements Serializable {
     @TableField("user_id")
     private Integer userId;
 
-
     @ApiModelProperty(value = "被分享者ID")
     @TableField("target_id")
     private Integer targetId;

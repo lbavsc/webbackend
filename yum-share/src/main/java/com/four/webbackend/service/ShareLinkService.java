@@ -2,6 +2,7 @@ package com.four.webbackend.service;
 
 import com.four.webbackend.entity.ShareLinkEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.four.webbackend.model.DirDto;
 import com.four.webbackend.model.ShareListDto;
 import com.four.webbackend.model.ShareVo;
 
@@ -23,4 +24,6 @@ public interface ShareLinkService extends IService<ShareLinkEntity> {
     List<ShareListDto> listShare(String token);
 
     boolean recellShare(String token, Integer shareId);
+
+    DirDto getShareUrlContent(String token, String shareUrl);
 }

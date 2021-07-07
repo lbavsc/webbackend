@@ -1,6 +1,7 @@
 package com.four.webbackend.controller.share;
 
 
+import com.four.webbackend.model.DirDto;
 import com.four.webbackend.model.ResultEntity;
 import com.four.webbackend.model.ShareListDto;
 import com.four.webbackend.model.ShareVo;
@@ -74,6 +75,20 @@ public class ShareLinkController {
                                     @RequestParam @NotEmpty(message = "分享id不能为空") Integer shareId) {
 
         if (!shareLinkService.recellShare(token, shareId)) {
+            return null;
+        }
+
+        return ResultUtil.success();
+    }
+
+    @ApiOperation("获取分享链接内容")
+    @GetMapping("/get")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity getShareUrlContent(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                    @RequestParam @NotEmpty(message = "分享id不能为空") String shareUrl) {
+
+        DirDto dto = shareLinkService.getShareUrlContent(token, shareUrl);
+        if (dto == null) {
             return null;
         }
 
