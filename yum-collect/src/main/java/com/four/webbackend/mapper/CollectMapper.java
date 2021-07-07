@@ -1,7 +1,10 @@
 package com.four.webbackend.mapper;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.four.webbackend.entity.CollectEntity;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.four.webbackend.model.CollectDto;
+import com.four.webbackend.model.MyPageVo;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -15,4 +18,5 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface CollectMapper extends BaseMapper<CollectEntity> {
 
+    IPage<CollectEntity> selectPageVo(MyPageVo<CollectDto> myPageVo, Integer userId);
 }

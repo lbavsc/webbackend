@@ -4,13 +4,25 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.four.webbackend.entity.CollectEntity">
-        <id column="collect_id" property="collectId" />
-        <result column="user_id" property="userId" />
-        <result column="file_id" property="fileId" />
-        <result column="version" property="version" />
-        <result column="id_dalete" property="idDalete" />
-        <result column="gmt_create" property="gmtCreate" />
-        <result column="gmt_update" property="gmtUpdate" />
+        <id column="collect_id" property="collectId"/>
+        <result column="user_id" property="userId"/>
+        <result column="file_id" property="fileId"/>
+        <result column="version" property="version"/>
+        <result column="id_dalete" property="idDalete"/>
+        <result column="gmt_create" property="gmtCreate"/>
+        <result column="gmt_update" property="gmtUpdate"/>
     </resultMap>
+
+    <sql id="Base_Column_List">
+        `collect_id`, `user_id`, `file_id`
+    </sql>
+
+    <select id="selectPageVo" resultType="com.four.webbackend.entity.CollectEntity">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM collect
+        WHERE collect.user_id = #{userId}
+        ORDER BY `collect_id` desc
+    </select>
 
 </mapper>

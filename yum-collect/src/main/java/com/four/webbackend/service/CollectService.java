@@ -1,7 +1,10 @@
 package com.four.webbackend.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.four.webbackend.entity.CollectEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.four.webbackend.model.CollectDto;
+import com.four.webbackend.model.MyPageVo;
 
 /**
  * <p>
@@ -13,4 +16,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface CollectService extends IService<CollectEntity> {
 
+    IPage<CollectDto> listFavor(MyPageVo<CollectDto> myPageVo, String token);
 }
