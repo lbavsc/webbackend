@@ -78,7 +78,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         if (!passwd.equals(userEntity.getPassword())) {
             return false;
         }
-        String token = creatToken(userEntity.getUserName(), userEntity.getUserId());
+        String token = creatToken(userEntity.getUserUuid(), userEntity.getUserId());
 
         response.setHeader("Authorization", token);
         response.setHeader("Access-Control-Expose-Headers", "Authorization");
@@ -142,8 +142,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         if (userEntity == null) {
             return;
         }
-        if (RedisUtil.hasKey(userEntity.getUserName())) {
-            RedisUtil.del(userEntity.getUserName());
+        if (RedisUtil.hasKey(userEntity.getUserUuid())) {
+            RedisUtil.del(userEntity.getUserUuid());
         }
     }
 

@@ -105,6 +105,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     @Override
     protected boolean onLoginSuccess(AuthenticationToken token, Subject subject, ServletRequest request, ServletResponse response) throws Exception {
         String jwttoken = (String) token.getPrincipal();
+        logger.info("shiro验证成功");
         if (jwttoken != null) {
             try {
                 if (TokenUtil.verify(jwttoken)) {
@@ -155,6 +156,7 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
             GlobalExceptionHandler.responseError(httpServletResponse, "没有token");
             return false;
         }
+
         return super.preHandle(request, response);
 
     }

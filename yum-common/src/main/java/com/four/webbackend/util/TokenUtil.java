@@ -66,7 +66,7 @@ public class TokenUtil {
      * @throws Exception
      */
     public static Boolean verify(String token) throws Exception {
-
+        logger.info("验证token");
         //创建token验证器
         JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(TOKEN_SECRET)).withIssuer("signup").build();
         DecodedJWT decodedJWT = jwtVerifier.verify(token);

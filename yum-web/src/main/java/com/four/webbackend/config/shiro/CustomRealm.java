@@ -3,6 +3,7 @@ package com.four.webbackend.config.shiro;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.four.webbackend.entity.UserEntity;
 import com.four.webbackend.mapper.UserMapper;
+import com.four.webbackend.model.JwtToken;
 import com.four.webbackend.service.UserService;
 import com.four.webbackend.util.TokenUtil;
 import org.apache.shiro.authc.AuthenticationException;
@@ -35,6 +36,11 @@ public class CustomRealm extends AuthorizingRealm {
     @Autowired
     public CustomRealm(UserMapper userMapper) {
         this.userMapper = userMapper;
+    }
+
+    @Override
+    public boolean supports(AuthenticationToken token) {
+        return token instanceof JwtToken;
     }
 
     private boolean exist(String token) {
