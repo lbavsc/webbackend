@@ -2,13 +2,11 @@ package com.four.webbackend.controller.share;
 
 
 import com.four.webbackend.model.ResultEntity;
+import com.four.webbackend.model.ShareListDto;
 import com.four.webbackend.model.ShareVo;
-import com.four.webbackend.model.UserDto;
 import com.four.webbackend.service.ShareLinkService;
 import com.four.webbackend.util.ResultUtil;
-import com.four.webbackend.util.TokenUtil;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.apache.shiro.authz.annotation.Logical;
@@ -17,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * <p>
@@ -45,12 +44,26 @@ public class ShareLinkController {
                               @RequestBody ShareVo shareVo) {
 
         String shareUrl = shareLinkService.share(token, shareVo);
-        if (shareUrl == null){
+        if (shareUrl == null) {
             return null;
         }
 
         return ResultUtil.success(shareUrl);
     }
 
+    @ApiOperation("获取用户分享列表")
+    @PostMapping("/listShare")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity listShare(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token) {
+
+        List<ShareListDto> shareListVos = shareLinkService.listShare(token);
+
+        if (shareListVos == null || shareListVos.size() <= 0) {
+            return ResultUtil.error(403, "无数据");
+        }
+
+
+        return ResultUtil.success(shareListVos);
+    }
 }
 

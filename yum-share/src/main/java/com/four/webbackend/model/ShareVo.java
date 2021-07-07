@@ -19,6 +19,7 @@ import java.io.Serializable;
 @ApiModel(value="ShareVo对象")
 public class ShareVo implements Serializable {
 
+    private static final long serialVersionUID = -4464725369251510869L;
     @ApiModelProperty(value = "文件夹或者文件id")
     @NotEmpty(message = "id不能为空")
     private Integer objectId;

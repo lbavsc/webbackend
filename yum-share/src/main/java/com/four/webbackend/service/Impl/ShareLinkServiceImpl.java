@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.four.webbackend.entity.*;
 import com.four.webbackend.handler.GlobalExceptionHandler;
 import com.four.webbackend.mapper.*;
+import com.four.webbackend.model.ShareListDto;
 import com.four.webbackend.model.ShareVo;
 import com.four.webbackend.service.ShareLinkService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -15,7 +16,9 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -32,7 +35,6 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
     private final FileMapper fileMapper;
     private final DirMapper dirMapper;
     private final UserFileMapper userFileMapper;
-    private final ShareNexusMapper shareNexusMapper;
 
     /**
      * 一天
@@ -60,11 +62,10 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
     public static final long PERMANENT_EXPIRE_TIME = 99999L * 24 * 60 * 60;
 
     @Autowired
-    public ShareLinkServiceImpl(FileMapper fileMapper, DirMapper dirMapper, UserFileMapper userFileMapper, ShareNexusMapper shareNexusMapper) {
+    public ShareLinkServiceImpl(FileMapper fileMapper, DirMapper dirMapper, UserFileMapper userFileMapper) {
         this.fileMapper = fileMapper;
         this.dirMapper = dirMapper;
         this.userFileMapper = userFileMapper;
-        this.shareNexusMapper = shareNexusMapper;
     }
 
 
@@ -104,25 +105,36 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
         String url = RandomStringUtils.random(16, true, true);
         shareLinkEntity.setLink(url);
 
+        shareLinkEntity.setTargetId(shareVo.getTargetId());
         if (baseMapper.insert(shareLinkEntity) != 1) {
             GlobalExceptionHandler.responseError(response, "分享失败,请重试");
             return null;
         }
-        shareLinkEntity = baseMapper.selectOne(new QueryWrapper<ShareLinkEntity>()
-                .eq("link", url));
 
-        ShareNexusEntity shareNexusEntity = new ShareNexusEntity();
-
-        shareNexusEntity.setLinkId(shareLinkEntity.getShareLinkId());
-        shareNexusEntity.setUserId(shareLinkEntity.getUserId());
-        shareNexusEntity.setTargetId(shareVo.getTargetId());
-
-        if (shareNexusMapper.insert(shareNexusEntity) != 1) {
-            GlobalExceptionHandler.responseError(response, "分享关系创建失败,请重试");
-            return null;
-        }
 
         return url;
+
+    }
+
+    @Override
+    public List<ShareListDto> listShare(String token) {
+        Integer userId = TokenUtil.getUserId(token);
+        List<ShareListDto> rest = new ArrayList<>();
+
+        List<ShareLinkEntity> shareListDtos = baseMapper.selectList(new QueryWrapper<ShareLinkEntity>()
+                .eq("user_id", userId));
+
+        for (ShareLinkEntity shareListDto : shareListDtos) {
+
+            ShareListDto dto = new ShareListDto();
+            dto.setSahreId(shareListDto.getShareLinkId());
+            dto.setExpire(shareListDto.getExpire());
+            dto.setTargetId(shareListDto.getTargetId());
+            dto.setShareUrl(shareListDto.getLink());
+            rest.add(dto);
+        }
+
+        return rest;
 
     }
 
