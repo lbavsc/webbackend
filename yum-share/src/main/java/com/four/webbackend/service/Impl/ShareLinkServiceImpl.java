@@ -1,14 +1,9 @@
 package com.four.webbackend.service.Impl;
 
-import com.four.webbackend.entity.DirEntity;
-import com.four.webbackend.entity.FileEntity;
-import com.four.webbackend.entity.ShareLinkEntity;
-import com.four.webbackend.entity.UserFileEntity;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.four.webbackend.entity.*;
 import com.four.webbackend.handler.GlobalExceptionHandler;
-import com.four.webbackend.mapper.DirMapper;
-import com.four.webbackend.mapper.FileMapper;
-import com.four.webbackend.mapper.ShareLinkMapper;
-import com.four.webbackend.mapper.UserFileMapper;
+import com.four.webbackend.mapper.*;
 import com.four.webbackend.model.ShareVo;
 import com.four.webbackend.service.ShareLinkService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -37,114 +32,103 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
     private final FileMapper fileMapper;
     private final DirMapper dirMapper;
     private final UserFileMapper userFileMapper;
+    private final ShareNexusMapper shareNexusMapper;
 
-    // 1天
+    /**
+     * 一天
+     */
     public static final long ONE_DAY_EXPIRE_TIME = 24 * 60 * 60;
 
-    // 3天
+    /**
+     * 三天
+     */
     public static final long THREE_DAY_EXPIRE_TIME = 3 * 24 * 60 * 60;
 
-    // 7天
-    public static final long SEVEN_DAY_EXPIRE_TIME = 3 * 24 * 60 * 60;
+    /**
+     * 七天
+     */
+    public static final long SEVEN_DAY_EXPIRE_TIME = 7 * 24 * 60 * 60;
 
-    // 30天
-    public static final long THIRTY_DAY_EXPIRE_TIME = 3 * 24 * 60 * 60;
+    /**
+     * 三十天
+     */
+    public static final long THIRTY_DAY_EXPIRE_TIME = 30 * 24 * 60 * 60;
 
-    // 30天
+    /**
+     * 永久
+     */
     public static final long PERMANENT_EXPIRE_TIME = 99999L * 24 * 60 * 60;
 
     @Autowired
-    public ShareLinkServiceImpl(FileMapper fileMapper, DirMapper dirMapper, UserFileMapper userFileMapper) {
+    public ShareLinkServiceImpl(FileMapper fileMapper, DirMapper dirMapper, UserFileMapper userFileMapper, ShareNexusMapper shareNexusMapper) {
         this.fileMapper = fileMapper;
         this.dirMapper = dirMapper;
         this.userFileMapper = userFileMapper;
+        this.shareNexusMapper = shareNexusMapper;
     }
+
 
     @Override
     public String share(String token, ShareVo shareVo) {
         HttpServletResponse response = getResponse();
-        String shareUrl;
         Integer userId = TokenUtil.getUserId(token);
+
+        ShareLinkEntity shareLinkEntity = new ShareLinkEntity();
+        Date expire = getExpireDate(shareVo.getExpire());
+        if (expire == null) {
+            GlobalExceptionHandler.responseError(response, "过期时间设置错误");
+            return null;
+        }
+
         if (shareVo.getIsDir()) {
-            shareUrl = shareDir(response, userId, shareVo);
+            UserFileEntity userFileEntity = userFileMapper.selectById(shareVo.getObjectId());
+
+            if (userFileEntity == null || !userFileEntity.getUserId().equals(userId)) {
+                GlobalExceptionHandler.responseError(response, "没有该文件");
+                return null;
+            }
+            shareLinkEntity.setFileId(userFileEntity.getFileId());
         } else {
-            shareUrl = shareFile(response, userId, shareVo);
+            DirEntity dirEntity = dirMapper.selectById(shareVo.getObjectId());
+
+            if (dirEntity == null || !dirEntity.getUserId().equals(userId)) {
+                GlobalExceptionHandler.responseError(response, "没有该文件");
+                return null;
+            }
+            shareLinkEntity.setFileId(dirEntity.getDirId());
         }
 
-        return shareUrl;
-
-    }
-
-    private String shareFile(HttpServletResponse response, Integer userId, ShareVo shareVo) {
-
-        UserFileEntity userFileEntity = userFileMapper.selectById(shareVo.getObjectId());
-
-        if (userFileEntity == null || !userFileEntity.getUserId().equals(userId)) {
-            GlobalExceptionHandler.responseError(response, "没有该文件");
-            return null;
-        }
-
-
-        ShareLinkEntity shareLinkEntity = new ShareLinkEntity();
-        Date expire = getExpireDate(shareVo.getExpire());
-        if (expire == null) {
-            GlobalExceptionHandler.responseError(response, "过期时间设置错误");
-            return null;
-        }
-        shareLinkEntity.setExpire(expire);
+        shareLinkEntity.setUserId(userId);
+        shareLinkEntity.setIsDir(shareLinkEntity.getIsDir());
 
         String url = RandomStringUtils.random(16, true, true);
         shareLinkEntity.setLink(url);
 
-        shareLinkEntity.setFileId(userFileEntity.getFileId());
-
-        shareLinkEntity.setUserId(userId);
-
-        shareLinkEntity.setIsDir(false);
-
-
-        if (baseMapper.insert(shareLinkEntity) == 1) {
-            return url;
+        if (baseMapper.insert(shareLinkEntity) != 1) {
+            GlobalExceptionHandler.responseError(response, "分享失败,请重试");
+            return null;
         }
-        return null;
-    }
+        shareLinkEntity = baseMapper.selectOne(new QueryWrapper<ShareLinkEntity>()
+                .eq("link", url));
 
+        ShareNexusEntity shareNexusEntity = new ShareNexusEntity();
 
-    private String shareDir(HttpServletResponse response, Integer userId, ShareVo shareVo) {
+        shareNexusEntity.setLinkId(shareLinkEntity.getShareLinkId());
+        shareNexusEntity.setUserId(shareLinkEntity.getUserId());
+        shareNexusEntity.setTargetId(shareVo.getTargetId());
 
-        DirEntity dirEntity = dirMapper.selectById(shareVo.getObjectId());
-
-        if (dirEntity == null || !dirEntity.getUserId().equals(userId)) {
-            GlobalExceptionHandler.responseError(response, "没有该文件");
+        if (shareNexusMapper.insert(shareNexusEntity) != 1) {
+            GlobalExceptionHandler.responseError(response, "分享关系创建失败,请重试");
             return null;
         }
 
-        ShareLinkEntity shareLinkEntity = new ShareLinkEntity();
-        Date expire = getExpireDate(shareVo.getExpire());
-        if (expire == null) {
-            GlobalExceptionHandler.responseError(response, "过期时间设置错误");
-            return null;
-        }
-        shareLinkEntity.setExpire(expire);
+        return url;
 
-        String url = RandomStringUtils.random(16, true, true);
-        shareLinkEntity.setLink(url);
-
-        shareLinkEntity.setFileId(dirEntity.getDirId());
-
-        shareLinkEntity.setUserId(userId);
-
-        shareLinkEntity.setIsDir(true);
-
-
-        if (baseMapper.insert(shareLinkEntity) == 1) {
-            return url;
-        }
-        return null;
     }
+
 
     private Date getExpireDate(Integer expire) {
-        Date date = null;
+        Date date;
         long currentTimeMillis = System.currentTimeMillis();
         if (expire == null) {
             expire = 1;
@@ -160,7 +144,8 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
             date = new Date(currentTimeMillis + THIRTY_DAY_EXPIRE_TIME);
         } else if (expire == 5) {
             date = new Date(currentTimeMillis + PERMANENT_EXPIRE_TIME);
-            ;
+        } else {
+            return null;
         }
 
         return date;

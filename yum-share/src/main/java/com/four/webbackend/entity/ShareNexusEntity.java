@@ -42,6 +42,10 @@ public class ShareNexusEntity implements Serializable {
     @TableField("user_id")
     private Integer userId;
 
+    @ApiModelProperty(value = "被分享者ID")
+    @TableField("target_id")
+    private Integer targetId;
+
     @ApiModelProperty(value = "乐观锁")
     @TableField("version")
     @Version
