@@ -48,7 +48,7 @@ public class FileController {
     }
 
     @ApiOperation("上传文件")
-    @PostMapping("/modifyInfo")
+    @PostMapping("/update")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity modifyInfo(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
                                    UpdateFileVo updateFileVo) {

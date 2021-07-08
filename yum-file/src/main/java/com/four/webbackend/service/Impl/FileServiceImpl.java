@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 
 import com.four.webbackend.util.TokenUtil;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -198,8 +199,9 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
 
         FileEntity fileEntity = new FileEntity();
 
+        String url = RandomStringUtils.random(16, true, true);
         // FIXME: 2021/7/6 此处应为上传到openstack里的链接
-        fileEntity.setUrl("http://121.5.149.9:8080/image/Z4l");
+        fileEntity.setUrl(url);
         fileEntity.setFileName(updateFileVo.getFile().getOriginalFilename());
         fileEntity.setFileSize(updateFileVo.getFile().getSize());
         fileEntity.setFileType(updateFileVo.getFile().getContentType());
@@ -210,10 +212,14 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
 
         // 通过md5值和文件夹id确定唯一值
         fileEntity = baseMapper.selectOne(new QueryWrapper<FileEntity>()
+                .eq("url", url));
+        // 查看同目录是否存在同一文件
+        UserFileEntity temp = userFileMapper.selectOne(new QueryWrapper<UserFileEntity>()
                 .eq("md5", updateFileVo.getFileMd5())
-                .eq("dir_id", updateFileVo.getDirId()));
+                .eq("dir_id", updateFileVo.getDirId())
+                .eq("user_id", TokenUtil.getUserId(token)));
 
-        if (fileEntity == null) {
+        if (temp != null) {
             return false;
         }
 
@@ -221,12 +227,12 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
         UserFileEntity userFileEntity = new UserFileEntity();
         userFileEntity.setUserId(TokenUtil.getUserId(token));
         userFileEntity.setFileId(fileEntity.getFileId());
-        userFileEntity.setFileId(updateFileVo.getDirId());
+        userFileEntity.setDirId(updateFileVo.getDirId());
         userFileEntity.setMd5(md5);
 
         userFileMapper.insert(userFileEntity);
 
-        return false;
+        return true;
     }
 
     /**

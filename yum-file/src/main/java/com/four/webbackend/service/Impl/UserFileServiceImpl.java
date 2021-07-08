@@ -39,19 +39,15 @@ public class UserFileServiceImpl extends ServiceImpl<UserFileMapper, UserFileEnt
 
     @Override
     public boolean isExist(String token, String fileMd5) {
-        boolean rest = false;
+
         Integer userId = TokenUtil.getUserId(token);
-        List<UserFileEntity> userFileEntityList = baseMapper.selectList(new QueryWrapper<UserFileEntity>()
+
+        int count = count(new QueryWrapper<UserFileEntity>()
                 .select("file_id")
+                .eq("md5", fileMd5)
                 .eq("user_id", userId));
 
-        for (UserFileEntity userFileEntity : userFileEntityList) {
-            if (fileMd5.equals(userFileEntity.getMd5())) {
-                rest = true;
-                break;
-            }
-        }
-        return rest;
+        return count > 0;
     }
 
     @Override
