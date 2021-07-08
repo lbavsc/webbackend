@@ -16,7 +16,7 @@ public class CollectDto implements Serializable{
 
     private static final long serialVersionUID = -8660092099095873913L;
     private Integer collectId;
-    private Integer fileId;
+    private Integer userFileId;
     private String fileName;
     private String fileType;
     private Long fileSize;

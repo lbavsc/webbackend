@@ -160,7 +160,7 @@ public class ValidateCodeUtil {
         g.dispose();
         //移除之前的session中的验证码信息
         session.removeAttribute(SESSION_KEY);
-        //重新将验证码放入session
+        //重新将验码放入session
         session.setAttribute(SESSION_KEY, randomStr);
         try {
             if (IMG.equals(type)) {

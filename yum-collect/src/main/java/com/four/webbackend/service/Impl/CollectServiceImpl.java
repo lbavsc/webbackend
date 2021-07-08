@@ -1,5 +1,6 @@
 package com.four.webbackend.service.Impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.four.webbackend.entity.CollectEntity;
@@ -15,7 +16,6 @@ import com.four.webbackend.service.CollectService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.four.webbackend.util.TokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -59,10 +59,20 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, CollectEntity
 
         List<CollectDto> dtos = new ArrayList<>();
         iPage.getRecords().forEach(entity -> {
-            FileEntity fileEntity = fileMapper.selectById(entity.getFileId());
+            UserFileEntity userFileEntity = userFileMapper.selectById(entity.getFileId());
+            if (userFileEntity == null) {
+                baseMapper.deleteById(entity);
+                return;
+            }
+            FileEntity fileEntity = fileMapper.selectById(userFileEntity.getFileId());
+            if (fileEntity == null) {
+                userFileMapper.delete(new QueryWrapper<UserFileEntity>().eq("file_id", userFileEntity.getUserId()));
+                baseMapper.deleteById(entity);
+                return;
+            }
             CollectDto collectDto = new CollectDto();
 
-            collectDto.setFileId(fileEntity.getFileId());
+            collectDto.setUserFileId(userFileEntity.getUserFileId());
             collectDto.setFileName(fileEntity.getFileName());
             collectDto.setFileSize(fileEntity.getFileSize());
             collectDto.setFileType(fileEntity.getFileType());
@@ -88,7 +98,7 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, CollectEntity
 
         CollectEntity collectEntity = new CollectEntity();
         collectEntity.setUserId(userFileEntity.getUserId());
-        collectEntity.setFileId(userFileEntity.getFileId());
+        collectEntity.setFileId(userFileEntity.getUserFileId());
 
         return baseMapper.insert(collectEntity) == 1;
     }
