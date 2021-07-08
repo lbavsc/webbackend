@@ -55,7 +55,7 @@ public class DirController {
                                       @RequestParam Integer dirId,
                                       @RequestParam String dirName) {
 
-        if (dirService.createDir(token, dirId, dirName)) {
+        if (!dirService.createDir(token, dirId, dirName)) {
             return null;
         }
         return ResultUtil.success();

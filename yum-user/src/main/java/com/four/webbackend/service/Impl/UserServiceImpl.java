@@ -74,7 +74,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             return false;
         }
         String passwd = PwdToMd5.encrypt(loginVo.getPasswd(), userEntity.getUserName());
-        System.err.println(passwd);
+
         if (!passwd.equals(userEntity.getPassword())) {
             return false;
         }

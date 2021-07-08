@@ -18,7 +18,11 @@ public interface FriendshipService extends IService<FriendshipEntity> {
 
     List<FriendshipDto> listBuddy(String token);
 
-    boolean addBuddy(String token, String identifier);
+    boolean addBuddy(String token, String uid);
 
     boolean deleteBuddy(String token, String uid);
+
+    List<FriendshipDto> getFriendApplication(String token);
+
+    boolean friendhandle(String token,  Integer friendshipId, Boolean isPass);
 }

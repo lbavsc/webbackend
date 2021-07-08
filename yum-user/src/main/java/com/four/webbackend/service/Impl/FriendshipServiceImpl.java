@@ -15,9 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.servlet.NoHandlerFoundException;
 
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,12 +43,11 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
     public List<FriendshipDto> listBuddy(String token) {
         HttpServletResponse response = getResponse();
         String uuid = TokenUtil.getAccount(token);
+
         Integer userId = TokenUtil.getUserId(token);
         List<FriendshipDto> rest = new ArrayList<>();
         UserEntity userEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
-                .select("user_id")
                 .eq("user_uuid", uuid));
-
         if (userEntity == null || userEntity.getUserId() == null) {
             GlobalExceptionHandler.responseError(response, "没有uuid为" + uuid + "的用户");
             return null;
@@ -67,7 +64,6 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
                     wrapper.eq("user1_id", userEntity.getUserId())
                             .or().eq("user2_id", userEntity.getUserId());
                 }));
-
         friendshipEntities.forEach(entity -> {
             FriendshipDto friendshipDto = new FriendshipDto();
             UserEntity temp = null;
@@ -75,15 +71,16 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
             if (userId.equals(entity.getUser1Id())) {
                 temp = userMapper.selectOne(new QueryWrapper<UserEntity>()
                         .select("user_uuid", "email", "userName")
-                        .eq("user2_id", entity.getUser2Id()));
+                        .eq("user_id", entity.getUser2Id()));
             } else if (userId.equals(entity.getUser2Id())) {
                 temp = userMapper.selectOne(new QueryWrapper<UserEntity>()
                         .select("user_uuid", "email", "userName")
-                        .eq("user1_id", entity.getUser1Id()));
+                        .eq("user_id", entity.getUser1Id()));
             }
             if (temp == null) {
                 return;
             }
+            friendshipDto.setFriendshipId(entity.getFriendshipId());
             friendshipDto.setEmail(temp.getEmail());
             friendshipDto.setUuid(temp.getUserUuid());
             friendshipDto.setUserName(temp.getUserName());
@@ -95,13 +92,13 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
     }
 
     @Override
-    public boolean addBuddy(String token, String identifier) {
+    public boolean addBuddy(String token, String uid) {
         HttpServletResponse response = getResponse();
         String uuid = TokenUtil.getAccount(token);
         Integer userId = TokenUtil.getUserId(token);
         UserEntity userEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
-                .select("user_id")
                 .eq("user_uuid", uuid));
+
         if (userEntity == null) {
             GlobalExceptionHandler.responseError(response, "没有uuid为" + uuid + "的用户");
             return false;
@@ -112,16 +109,15 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
             return false;
         }
         UserEntity buddyEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
-                .select("user_id")
                 .and(wrapper -> {
-                    wrapper.eq("user_uuid", identifier)
-                            .or().eq("email", identifier);
+                    wrapper.eq("user_uuid", uid)
+                            .or().eq("email", uid);
                 }));
         if (buddyEntity == null) {
-            GlobalExceptionHandler.responseError(response, "没有uuid(邮箱)为" + identifier + "的用户");
+            GlobalExceptionHandler.responseError(response, "没有uuid(邮箱)为" + uid + "的用户");
         }
 
-        if (listBuddy(uuid).size() > 0) {
+        if (listBuddy(token).size() > 0) {
             GlobalExceptionHandler.responseError(response, "对方已是您的好友");
             return false;
         }
@@ -131,8 +127,36 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
         friendshipEntity.setUser2Id(buddyEntity.getUserId());
         friendshipEntity.setStatus(FriendshipConstant.UNDER_REVIEW);
 
-        baseMapper.insert(friendshipEntity);
-        return true;
+
+        return baseMapper.insert(friendshipEntity) == 1;
+    }
+
+    @Override
+    public List<FriendshipDto> getFriendApplication(String token) {
+        Integer userId = TokenUtil.getUserId(token);
+
+        List<FriendshipEntity> entities = baseMapper.selectList(new QueryWrapper<FriendshipEntity>()
+                .eq("user1_id", userId)
+                .eq("status", FriendshipConstant.UNDER_REVIEW));
+
+        List<FriendshipDto> rest = new ArrayList<>();
+
+        entities.forEach(entity -> {
+            FriendshipDto friendshipDto = new FriendshipDto();
+
+            UserEntity temp = userMapper.selectOne(new QueryWrapper<UserEntity>()
+                    .select("user_uuid", "email", "userName")
+                    .eq("user_id", entity.getUser2Id()));
+
+            friendshipDto.setFriendshipId(entity.getFriendshipId());
+            friendshipDto.setEmail(temp.getEmail());
+            friendshipDto.setUuid(temp.getUserUuid());
+            friendshipDto.setUserName(temp.getUserName());
+
+            rest.add(friendshipDto);
+        });
+
+        return rest;
     }
 
     @Override
@@ -142,7 +166,6 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
 
         HttpServletResponse response = getResponse();
         UserEntity userEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
-                .select("user_id")
                 .eq("user_uuid", uuid));
         if (userEntity == null) {
             GlobalExceptionHandler.responseError(response, "没有uuid为" + uuid + "的用户");
@@ -153,7 +176,6 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
             return false;
         }
         UserEntity buddyEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
-                .select("user_id")
                 .eq("user_uuid", uid));
         if (buddyEntity == null) {
             GlobalExceptionHandler.responseError(response, "没有uuid为" + uid + "的用户");
@@ -162,10 +184,33 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
         baseMapper.delete(new QueryWrapper<FriendshipEntity>()
                 .eq("user1_id", userEntity.getUserId())
                 .eq("user2_id", buddyEntity.getUserId())
+                .eq("status", FriendshipConstant.PASS_REVIEW)
                 .or(wrapper -> {
                     wrapper.eq("user1_id", buddyEntity.getUserId())
-                            .eq("user2_id", userEntity.getUserId());
+                            .eq("user2_id", userEntity.getUserId())
+                            .eq("status", FriendshipConstant.PASS_REVIEW);
                 }));
+
+        return true;
+    }
+
+
+
+    @Override
+    public boolean friendhandle(String token,  Integer friendshipId, Boolean isPass) {
+        FriendshipEntity friendshipEntity = baseMapper.selectById(friendshipId);
+        HttpServletResponse response = getResponse();
+        if (friendshipEntity == null || !friendshipEntity.getUser2Id().equals(TokenUtil.getUserId(token))) {
+            GlobalExceptionHandler.responseError(response, "处理失败,无此条申请");
+        }
+        if (isPass) {
+            assert friendshipEntity != null;
+            friendshipEntity.setStatus(FriendshipConstant.PASS_REVIEW);
+            baseMapper.updateById(friendshipEntity);
+        } else {
+            baseMapper.deleteById(friendshipEntity);
+        }
+
 
         return true;
     }

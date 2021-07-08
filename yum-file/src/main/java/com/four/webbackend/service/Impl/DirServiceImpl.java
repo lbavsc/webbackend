@@ -148,9 +148,12 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
     @Override
     public boolean createDir(String token, Integer dirId, String dirName) {
         Integer userId = TokenUtil.getUserId(token);
-
+        HttpServletResponse response = getResponse();
         DirEntity dirEntity = new DirEntity();
         dirEntity.setOwnedDirId(dirId);
+        if (dirName.isEmpty()) {
+            GlobalExceptionHandler.responseError(response, "文件夹名不能为空");
+        }
         dirEntity.setDirName(dirName);
         dirEntity.setUserId(userId);
 

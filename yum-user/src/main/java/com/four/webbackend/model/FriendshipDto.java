@@ -21,6 +21,9 @@ public class FriendshipDto implements Serializable {
 
 
     private static final long serialVersionUID = -6615580324231901185L;
+
+    private Integer friendshipId;
+
     private String uuid;
 
     private String email;

@@ -50,7 +50,7 @@ public class FriendshipController {
             return null;
         }
         if (dtos.size() == 0) {
-            return ResultUtil.error(403, "无数据");
+            return ResultUtil.success(200, "无数据");
         }
 
         return ResultUtil.success(dtos);
@@ -62,7 +62,40 @@ public class FriendshipController {
     public ResultEntity addBuddy(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
                                  @ApiParam("人员的UUID或者邮箱") @RequestParam String uid) {
 
-        if (!friendshipService.deleteBuddy(token, uid)) {
+
+        if (!friendshipService.addBuddy(token, uid)) {
+            return null;
+        }
+        return ResultUtil.success();
+    }
+
+
+    @ApiOperation("获取好友申请列表")
+    @GetMapping("/apply")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity getFriendApplication(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token) {
+
+        List<FriendshipDto> dtos = friendshipService.getFriendApplication(token);
+
+        if (dtos == null) {
+            return null;
+        }
+        if (dtos.size() == 0) {
+            return ResultUtil.success(200, "无数据");
+        }
+
+        return ResultUtil.success(dtos);
+    }
+
+
+    @ApiOperation("处理好友申请")
+    @GetMapping("/apply/handle")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity friendhandle(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                     @RequestParam Integer friendshipId,
+                                     @RequestParam Boolean isPass) {
+
+        if (!friendshipService.friendhandle(token, friendshipId, isPass)) {
             return null;
         }
 
@@ -73,10 +106,10 @@ public class FriendshipController {
     @GetMapping("/deleteBuddy")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity deleteBuddy(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
-                                    @ApiParam("人员的UUID或者邮箱") @RequestParam String identifier) {
+                                    @ApiParam("人员的UUID或者邮箱") @RequestParam String uid) {
 
-        ;
-        if (!friendshipService.addBuddy(token, identifier)) {
+
+        if (!friendshipService.deleteBuddy(token, uid)) {
             return null;
         }
         return ResultUtil.success();
