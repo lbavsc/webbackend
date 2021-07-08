@@ -24,4 +24,7 @@ public interface DirService extends IService<DirEntity> {
     boolean deleteDir(String token, DeleteVo deleteVo);
 
     DirDto getDirContent(String token, String dirId);
+
+
+    boolean createDir(String token, Integer dirId, String dirName);
 }

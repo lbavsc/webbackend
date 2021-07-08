@@ -47,5 +47,18 @@ public class DirController {
         }
         return ResultUtil.success(dto);
     }
+
+    @ApiOperation("新建文件夹")
+    @GetMapping("/create")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity createDir(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                      @RequestParam Integer dirId,
+                                      @RequestParam String dirName) {
+
+        if (dirService.createDir(token, dirId, dirName)) {
+            return null;
+        }
+        return ResultUtil.success();
+    }
 }
 

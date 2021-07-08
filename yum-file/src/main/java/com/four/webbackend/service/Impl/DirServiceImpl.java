@@ -145,6 +145,20 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
         return dto;
     }
 
+    @Override
+    public boolean createDir(String token, Integer dirId, String dirName) {
+        Integer userId = TokenUtil.getUserId(token);
+
+        DirEntity dirEntity = new DirEntity();
+        dirEntity.setOwnedDirId(dirId);
+        dirEntity.setDirName(dirName);
+        dirEntity.setUserId(userId);
+
+        return baseMapper.insert(dirEntity) == 1;
+    }
+
+
+
     private HttpServletResponse getResponse() {
         return ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
     }
