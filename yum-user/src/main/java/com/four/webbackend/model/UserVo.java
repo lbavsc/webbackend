@@ -2,6 +2,8 @@ package com.four.webbackend.model;
 
 import lombok.Builder;
 import lombok.Data;
+
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -12,9 +14,7 @@ import java.io.Serializable;
  * @date 2021/7/5 下午6:38
  **/
 @Data
-@Builder
 public class UserVo implements Serializable {
-
 
     private static final long serialVersionUID = 6707058454072773168L;
 
@@ -23,4 +23,7 @@ public class UserVo implements Serializable {
     private String userName;
 
     private String checkCode;
+
+    @NotBlank(message = "密码不能为空")
+    private String passwd;
 }

@@ -4,6 +4,7 @@ package com.four.webbackend.controller.user;
 import com.four.webbackend.model.*;
 import com.four.webbackend.service.UserService;
 import com.four.webbackend.util.CheckCodeUtil;
+import com.four.webbackend.util.RedisUtil;
 import com.four.webbackend.util.ResultUtil;
 import com.four.webbackend.util.TokenUtil;
 import io.swagger.annotations.Api;
@@ -107,9 +108,10 @@ public class UserController {
                                    @ApiParam("修改密码表单") @RequestBody PasswdVo passwdVo) {
 
         String uuid = TokenUtil.getAccount(token);
-        if (userService.modifyPwd(passwdVo, uuid)) {
+        if (!userService.modifyPwd(passwdVo, uuid)) {
             return ResultUtil.error(403, "修改失败,请重试");
         }
+        RedisUtil.del(TokenUtil.getAccount(token));
         return ResultUtil.success();
     }
 

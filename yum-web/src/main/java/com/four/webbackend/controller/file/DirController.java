@@ -42,6 +42,9 @@ public class DirController {
     public ResultEntity getDirContent(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
                                       @RequestParam String dirId) {
         DirDto dto = dirService.getDirContent(token, dirId);
+        if (dto == null) {
+            return ResultUtil.error(403, "无数据");
+        }
         return ResultUtil.success(dto);
     }
 }

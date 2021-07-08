@@ -19,6 +19,8 @@ import java.io.Serializable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FriendshipDto implements Serializable {
 
+
+    private static final long serialVersionUID = -6615580324231901185L;
     private String uuid;
 
     private String email;

@@ -18,6 +18,8 @@ import java.io.Serializable;
 @Data
 public class ForgotPwdVo implements Serializable {
 
+
+    private static final long serialVersionUID = 1015212779755179531L;
     @NotBlank(message = "邮箱不能为空")
     @Email(message = "请填写正确的邮箱格式")
     private String userEmail;

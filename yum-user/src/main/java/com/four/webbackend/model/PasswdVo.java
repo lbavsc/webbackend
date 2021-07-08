@@ -14,6 +14,8 @@ import java.io.Serializable;
 @Data
 public class PasswdVo implements Serializable {
 
+
+    private static final long serialVersionUID = -5068421734221723182L;
     private String oldPasswd;
 
     private String newPasswd;

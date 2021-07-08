@@ -91,7 +91,7 @@ public class FileController {
     @PostMapping("/rename")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity rename(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
-                               RenameFileOrDirVo renameFileOrDirVo) {
+                               @RequestBody RenameFileOrDirVo renameFileOrDirVo) {
 
         if (renameFileOrDirVo.getIsDir()) {
             if (!dirService.rename(token, renameFileOrDirVo)) {

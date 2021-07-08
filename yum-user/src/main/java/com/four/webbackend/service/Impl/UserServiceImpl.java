@@ -74,7 +74,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             return false;
         }
         String passwd = PwdToMd5.encrypt(loginVo.getPasswd(), userEntity.getUserName());
-
+        System.err.println(passwd);
         if (!passwd.equals(userEntity.getPassword())) {
             return false;
         }
@@ -112,9 +112,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
             return null;
         }
 
-
         UserEntity userEntity = baseMapper.selectOne(new QueryWrapper<UserEntity>().eq("user_uuid", uuid));
         BeanUtils.copyProperties(userVo, userEntity);
+        String passwd = PwdToMd5.encrypt(userVo.getPasswd(), userVo.getUserName());
+        userEntity.setPassword(passwd);
         baseMapper.updateById(userEntity);
 
         userEntity = baseMapper.selectOne(new QueryWrapper<UserEntity>().eq("user_uuid", uuid));
@@ -130,7 +131,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         if (!passwd.equals(userEntity.getPassword())) {
             throw new AccountException("旧密码错误");
         }
-
+        passwd = PwdToMd5.encrypt(passwdVo.getNewPasswd(), userEntity.getUserName());
         userEntity.setPassword(passwd);
         return baseMapper.updateById(userEntity) == 1;
     }

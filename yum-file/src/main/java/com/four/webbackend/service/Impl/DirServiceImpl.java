@@ -56,7 +56,8 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
         Integer userId = TokenUtil.getUserId(token);
         DirEntity dirEntity = baseMapper.selectById(renameFileOrDirVo.getObjectId());
         HttpServletResponse response = getResponse();
-        if (dirEntity == null || dirEntity.getUserId().equals(userId)) {
+
+        if (dirEntity == null || !dirEntity.getUserId().equals(userId)) {
             GlobalExceptionHandler.responseError(response, "没有该目录");
             return false;
         }
