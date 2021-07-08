@@ -13,6 +13,7 @@ import com.four.webbackend.service.DirService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.four.webbackend.util.TokenUtil;
 import jdk.nashorn.internal.parser.Token;
+import org.apache.shiro.authc.AccountException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -67,14 +68,12 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
     }
 
     @Override
-    public boolean deleteDir(String token, DeleteVo deleteVo) {
-        HttpServletResponse response = getResponse();
+    public boolean deleteDir(HttpServletResponse response, String token, DeleteVo deleteVo) {
         Integer userId = TokenUtil.getUserId(token);
-        DirEntity dirEntity = baseMapper.selectById(deleteVo.getIsDir());
+        DirEntity dirEntity = baseMapper.selectById(deleteVo.getFileId());
 
         if (dirEntity == null || !dirEntity.getUserId().equals(userId)) {
-            GlobalExceptionHandler.responseError(response, "没有该目录");
-            return false;
+            throw new AccountException("没有该目录");
         }
 
         int count = userFileMapper.selectCount(new QueryWrapper<UserFileEntity>()
@@ -82,8 +81,7 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
                 .eq("dir_id", dirEntity.getDirId()));
 
         if (count > 0) {
-            GlobalExceptionHandler.responseError(response, "只能删除空文件夹");
-            return false;
+            throw new AccountException("只能删除空文件夹");
         }
 
         baseMapper.deleteById(deleteVo.getFileId());

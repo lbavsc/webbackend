@@ -6,6 +6,8 @@ import com.four.webbackend.model.DeleteVo;
 import com.four.webbackend.model.DirDto;
 import com.four.webbackend.model.RenameFileOrDirVo;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * <p>
  * 文件夹信息表 服务类
@@ -21,7 +23,7 @@ public interface DirService extends IService<DirEntity> {
 
     boolean rename(String token, RenameFileOrDirVo renameFileOrDirVo);
 
-    boolean deleteDir(String token, DeleteVo deleteVo);
+    boolean deleteDir(HttpServletResponse response, String token, DeleteVo deleteVo);
 
     DirDto getDirContent(String token, String dirId);
 

@@ -135,6 +135,7 @@ public class GlobalExceptionHandler {
         try {
             String rj = new ObjectMapper().writeValueAsString(ResultUtil.error(403, msg));
             httpResponse.getWriter().append(rj);
+            httpResponse.getWriter().close();
         } catch (IOException e) {
             e.printStackTrace();
         }

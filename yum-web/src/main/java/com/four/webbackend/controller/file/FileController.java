@@ -135,11 +135,12 @@ public class FileController {
     @PostMapping("/deleteFile")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity deleteFile(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
-                                   @RequestBody DeleteFileVo deleteFileVo) {
+                                   @RequestBody DeleteFileVo deleteFileVo,
+                                   HttpServletResponse response) {
 
         for (DeleteVo deleteVo : deleteFileVo.getDeleteList()) {
             if (deleteVo.getIsDir()) {
-                if (!dirService.deleteDir(token, deleteVo)) {
+                if (!dirService.deleteDir( response,token, deleteVo)) {
                     return null;
                 }
             } else {

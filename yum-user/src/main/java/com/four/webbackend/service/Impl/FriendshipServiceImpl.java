@@ -70,11 +70,9 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
 
             if (userId.equals(entity.getUser1Id())) {
                 temp = userMapper.selectOne(new QueryWrapper<UserEntity>()
-                        .select("user_uuid", "email", "userName")
                         .eq("user_id", entity.getUser2Id()));
             } else if (userId.equals(entity.getUser2Id())) {
                 temp = userMapper.selectOne(new QueryWrapper<UserEntity>()
-                        .select("user_uuid", "email", "userName")
                         .eq("user_id", entity.getUser1Id()));
             }
             if (temp == null) {
@@ -136,7 +134,7 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
         Integer userId = TokenUtil.getUserId(token);
 
         List<FriendshipEntity> entities = baseMapper.selectList(new QueryWrapper<FriendshipEntity>()
-                .eq("user1_id", userId)
+                .eq("user2_id", userId)
                 .eq("status", FriendshipConstant.UNDER_REVIEW));
 
         List<FriendshipDto> rest = new ArrayList<>();
@@ -145,7 +143,6 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
             FriendshipDto friendshipDto = new FriendshipDto();
 
             UserEntity temp = userMapper.selectOne(new QueryWrapper<UserEntity>()
-                    .select("user_uuid", "email", "userName")
                     .eq("user_id", entity.getUser2Id()));
 
             friendshipDto.setFriendshipId(entity.getFriendshipId());
