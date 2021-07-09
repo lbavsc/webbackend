@@ -12,7 +12,6 @@ import com.four.webbackend.util.TokenUtil;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -75,6 +74,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
             throw new BusinessException(403, "过期时间设置错误");
         }
         shareLinkEntity.setExpire(expire);
+
         if (!shareVo.getIsDir()) {
             UserFileEntity userFileEntity = userFileMapper.selectById(shareVo.getObjectId());
 
@@ -89,16 +89,14 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
                 throw new BusinessException(403, "没有该文件");
             }
             shareLinkEntity.setFileId(dirEntity.getDirId());
-        }
 
+        }
+        shareLinkEntity.setIsDir(shareVo.getIsDir());
         shareLinkEntity.setUserId(userId);
         shareLinkEntity.setIsDir(shareLinkEntity.getIsDir());
 
         String url = RandomStringUtils.random(16, true, true);
         shareLinkEntity.setLink(url);
-
-        shareLinkEntity.setIsDir(shareVo.getIsDir());
-
 
         shareLinkEntity.setTargetId(shareVo.getTargetId());
         if (baseMapper.insert(shareLinkEntity) != 1) {
@@ -120,7 +118,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
 
         for (ShareLinkEntity shareListDto : shareListDtos) {
             if (DataUtil.afterDateNow(shareListDto.getExpire())) {
-                baseMapper.deleteById(shareListDto);
+                baseMapper.deleteById(shareListDto.getShareLinkId());
                 continue;
             }
             ShareListDto dto = new ShareListDto();

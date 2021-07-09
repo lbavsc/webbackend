@@ -22,6 +22,7 @@
         <include refid="Base_Column_List"/>
         FROM collect
         WHERE collect.user_id = #{userId}
+        AND is_delete = 0
         ORDER BY `collect_id` desc
     </select>
 
