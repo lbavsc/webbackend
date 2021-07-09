@@ -7,10 +7,12 @@ import com.four.webbackend.mapper.*;
 import com.four.webbackend.model.*;
 import com.four.webbackend.service.ShareLinkService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.four.webbackend.util.DataUtil;
 import com.four.webbackend.util.TokenUtil;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -72,7 +74,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
         if (expire == null) {
             throw new BusinessException(403, "过期时间设置错误");
         }
-
+        shareLinkEntity.setExpire(expire);
         if (!shareVo.getIsDir()) {
             UserFileEntity userFileEntity = userFileMapper.selectById(shareVo.getObjectId());
 
@@ -95,6 +97,9 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
         String url = RandomStringUtils.random(16, true, true);
         shareLinkEntity.setLink(url);
 
+        shareLinkEntity.setIsDir(shareVo.getIsDir());
+
+
         shareLinkEntity.setTargetId(shareVo.getTargetId());
         if (baseMapper.insert(shareLinkEntity) != 1) {
             throw new BusinessException(403, "分享失败,请重试");
@@ -114,7 +119,10 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
                 .eq("user_id", userId));
 
         for (ShareLinkEntity shareListDto : shareListDtos) {
-
+            if (DataUtil.afterDateNow(shareListDto.getExpire())) {
+                baseMapper.deleteById(shareListDto);
+                continue;
+            }
             ShareListDto dto = new ShareListDto();
             dto.setSahreId(shareListDto.getShareLinkId());
             dto.setExpire(shareListDto.getExpire());
@@ -148,7 +156,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
                 .eq("link", shareUrl));
 
         boolean isPass = shareLinkEntity == null || (!shareLinkEntity.getTargetId().equals(0)) && !shareLinkEntity.getTargetId().equals(userId);
-        if (isPass) {
+        if (isPass || DataUtil.afterDateNow(shareLinkEntity.getExpire())) {
             throw new BusinessException(403, "没有该分享链接");
         }
 
