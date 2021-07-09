@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.four.webbackend.entity.CollectEntity;
 import com.four.webbackend.entity.FileEntity;
 import com.four.webbackend.entity.UserFileEntity;
+import com.four.webbackend.exception.BusinessException;
 import com.four.webbackend.handler.GlobalExceptionHandler;
 import com.four.webbackend.mapper.CollectMapper;
 import com.four.webbackend.mapper.FileMapper;
@@ -89,11 +90,9 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, CollectEntity
 
     @Override
     public boolean favorFile(String token, Integer userFileId) {
-        HttpServletResponse response = getResponse();
         UserFileEntity userFileEntity = userFileMapper.selectById(userFileId);
         if (userFileEntity == null || userFileEntity.getUserId().equals(TokenUtil.getUserId(token))) {
-            GlobalExceptionHandler.responseError(response, "没有该文件");
-            return false;
+            throw new BusinessException(403, "没有该文件");
         }
 
         CollectEntity collectEntity = new CollectEntity();
@@ -105,17 +104,10 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, CollectEntity
 
     @Override
     public boolean recallFile(String token, Integer collectId) {
-        HttpServletResponse response = getResponse();
         CollectEntity collectEntity = baseMapper.selectById(collectId);
         if (collectEntity == null || !collectEntity.getUserId().equals(TokenUtil.getUserId(token))) {
-            GlobalExceptionHandler.responseError(response, "没有该文件的收藏信息");
-            return false;
+            throw new BusinessException(403, "没有该文件的收藏信息");
         }
         return baseMapper.deleteById(collectId) == 1;
-    }
-
-
-    private HttpServletResponse getResponse() {
-        return ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
     }
 }

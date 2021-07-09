@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.four.webbackend.entity.FileEntity;
 
 import com.four.webbackend.entity.UserFileEntity;
+import com.four.webbackend.exception.BusinessException;
 import com.four.webbackend.handler.GlobalExceptionHandler;
 import com.four.webbackend.mapper.FileMapper;
 
@@ -62,12 +63,11 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
 
     @Override
     public boolean mobileFile(String token, MobileFileVo mobileFileVo) {
-        HttpServletResponse response = getResponse();
+
         UserFileEntity userFileEntity = userFileMapper.selectById(mobileFileVo.getUserFileId());
 
         if (userFileEntity == null || !userFileEntity.getUserId().equals(TokenUtil.getUserId(token))) {
-            GlobalExceptionHandler.responseError(response, "该目录不存在此文件");
-            return false;
+            throw new BusinessException(403, "该目录不存在此文件");
         }
 
         userFileEntity.setDirId(mobileFileVo.getDirFromId());
@@ -78,19 +78,16 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
     @Override
     public boolean rename(String token, RenameFileOrDirVo renameFileOrDirVo) {
         Integer userId = TokenUtil.getUserId(token);
-        HttpServletResponse response = getResponse();
         UserFileEntity userFileEntity = userFileMapper.selectById(renameFileOrDirVo.getObjectId());
 
         if (userFileEntity == null || userFileEntity.getUserId().equals(userId)) {
-            GlobalExceptionHandler.responseError(response, "没有该文件");
-            return false;
+            throw new BusinessException(403, "没有该文件");
         }
 
         FileEntity fileEntity = baseMapper.selectById(userFileEntity.getFileId());
 
         if (fileEntity == null) {
-            GlobalExceptionHandler.responseError(response, "没有该文件");
-            return false;
+            throw new BusinessException(403, "没有该文件");
         }
 
         // FIXME: 2021/7/6 存在设计漏洞,修改一个文件名,其他同用户同文件名也会变化,文件名不应该存储在文件信息表里,应该存在文件-用户关系表里,这样的话,同文件在不同文件夹也可拥有不同文件名
@@ -100,13 +97,12 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
 
     @Override
     public boolean copyFile(String token, CopyFileVo copyFileVo) {
-        HttpServletResponse response = getResponse();
+
         Integer userId = TokenUtil.getUserId(token);
         UserFileEntity userFileEntity = userFileMapper.selectById(copyFileVo.getUserFileId());
 
         if (userFileEntity == null || userFileEntity.getUserId().equals(userId)) {
-            GlobalExceptionHandler.responseError(response, "没有该文件");
-            return false;
+            throw new BusinessException(403, "没有该文件");
         }
 
         userFileEntity.setUserFileId(null);
@@ -123,15 +119,14 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
         UserFileEntity userFileEntity = userFileMapper.selectById(userFileId);
 
         if (userFileEntity == null || !userFileEntity.getUserId().equals(TokenUtil.getUserId(token))) {
-            GlobalExceptionHandler.responseError(response, "没有该文件");
-            return false;
+            throw new BusinessException(403, "没有该文件");
+
         }
         FileEntity fileEntity = baseMapper.selectById(userFileEntity.getFileId());
 
         if (fileEntity == null) {
-            GlobalExceptionHandler.responseError(response, "没有该文件");
             userFileMapper.deleteById(userFileId);
-            return false;
+            throw new BusinessException(403, "没有该文件");
         }
         // TODO: 2021/7/6 从openstack里获取到文件,然后发送给前端
 
@@ -140,14 +135,12 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
 
     @Override
     public boolean deleteFile(String token, DeleteVo deleteVo) {
-        HttpServletResponse response = getResponse();
         Integer userId = TokenUtil.getUserId(token);
 
         UserFileEntity userFileEntity = userFileMapper.selectById(deleteVo.getFileId());
 
         if (userFileEntity == null || !userFileEntity.getUserId().equals(userId)) {
-            GlobalExceptionHandler.responseError(response, "没有id为" + deleteVo.getFileId() + "的文件");
-            return false;
+            throw new BusinessException(403, "没有id为" + deleteVo.getFileId() + "的文件");
         }
 
         userFileMapper.deleteById(userFileEntity);
@@ -158,20 +151,17 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
     @Override
     public FileInfoDto getFileInfo(String token, Integer userFileId) {
         FileInfoDto fileInfoDto = new FileInfoDto();
-        HttpServletResponse response = getResponse();
         UserFileEntity userFileEntity = userFileMapper.selectById(userFileId);
 
         if (userFileEntity == null || !userFileEntity.getUserId().equals(TokenUtil.getUserId(token))) {
-            GlobalExceptionHandler.responseError(response, "无此文件");
-            return null;
+            throw new BusinessException(403, "无此文件");
         }
 
         FileEntity fileEntity = baseMapper.selectById(userFileEntity.getFileId());
 
         if (fileEntity == null) {
-            GlobalExceptionHandler.responseError(response, "无此文件");
             userFileMapper.deleteById(userFileEntity);
-            return null;
+            throw new BusinessException(403, "无此文件");
         }
 
         fileInfoDto.setUserFileId(userFileEntity.getUserFileId());
@@ -190,11 +180,9 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
      * @param updateFileVo updateFileVo
      */
     private boolean updateFileExists(String token, UpdateFileVo updateFileVo) {
-        HttpServletResponse response = getResponse();
         String md5 = getMd5(updateFileVo.getFile());
         if (!md5.equals(updateFileVo.getFileMd5())) {
-            GlobalExceptionHandler.responseError(response, "md5值不匹配");
-            return false;
+            throw new BusinessException(403, "md5值不匹配");
         }
 
         FileEntity fileEntity = new FileEntity();
@@ -243,7 +231,6 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
      */
     private boolean updateFileNotExists(String token, UpdateFileVo updateFileVo) {
         Integer userId = TokenUtil.getUserId(token);
-        HttpServletResponse response = getResponse();
 
         // 查询看是否用户是否已存在该文件
         List<UserFileEntity> userFileEntity = userFileMapper.selectList(new QueryWrapper<UserFileEntity>()
@@ -252,8 +239,7 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
 
         // 若未存在,则提示用户上传文件
         if (userFileEntity == null || userFileEntity.size() <= 0) {
-            GlobalExceptionHandler.responseError(response, "请上传文件");
-            return false;
+            throw new BusinessException(403, "请上传文件");
         }
 
         // 查询目录是否存在该文件
@@ -262,8 +248,7 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
                 .eq("dir_id", updateFileVo.getDirId())
                 .eq("md5", updateFileVo.getFileMd5()));
         if (count > 0) {
-            GlobalExceptionHandler.responseError(response, "该目录已存在此文件");
-            return false;
+            throw new BusinessException(403, "该目录已存在此文件");
         }
 
         // 构建文件-用户关系
@@ -297,9 +282,5 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
         }
         return null;
 
-    }
-
-    private HttpServletResponse getResponse() {
-        return ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
     }
 }

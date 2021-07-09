@@ -2,7 +2,7 @@ package com.four.webbackend.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.four.webbackend.entity.*;
-import com.four.webbackend.handler.GlobalExceptionHandler;
+import com.four.webbackend.exception.BusinessException;
 import com.four.webbackend.mapper.*;
 import com.four.webbackend.model.*;
 import com.four.webbackend.service.ShareLinkService;
@@ -11,14 +11,9 @@ import com.four.webbackend.util.TokenUtil;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * <p>
@@ -70,30 +65,26 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
 
     @Override
     public String share(String token, ShareVo shareVo) {
-        HttpServletResponse response = getResponse();
         Integer userId = TokenUtil.getUserId(token);
 
         ShareLinkEntity shareLinkEntity = new ShareLinkEntity();
         Date expire = getExpireDate(shareVo.getExpire());
         if (expire == null) {
-            GlobalExceptionHandler.responseError(response, "过期时间设置错误");
-            return null;
+            throw new BusinessException(403, "过期时间设置错误");
         }
 
         if (!shareVo.getIsDir()) {
             UserFileEntity userFileEntity = userFileMapper.selectById(shareVo.getObjectId());
 
             if (userFileEntity == null || !userFileEntity.getUserId().equals(userId)) {
-                GlobalExceptionHandler.responseError(response, "没有该文件");
-                return null;
+                throw new BusinessException(403, "没有该文件");
             }
             shareLinkEntity.setFileId(userFileEntity.getFileId());
         } else {
             DirEntity dirEntity = dirMapper.selectById(shareVo.getObjectId());
 
             if (dirEntity == null || !dirEntity.getUserId().equals(userId)) {
-                GlobalExceptionHandler.responseError(response, "没有该文件");
-                return null;
+                throw new BusinessException(403, "没有该文件");
             }
             shareLinkEntity.setFileId(dirEntity.getDirId());
         }
@@ -106,8 +97,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
 
         shareLinkEntity.setTargetId(shareVo.getTargetId());
         if (baseMapper.insert(shareLinkEntity) != 1) {
-            GlobalExceptionHandler.responseError(response, "分享失败,请重试");
-            return null;
+            throw new BusinessException(403, "分享失败,请重试");
         }
 
 
@@ -139,13 +129,11 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
 
     @Override
     public boolean recellShare(String token, Integer shareId) {
-        HttpServletResponse response = getResponse();
         ShareLinkEntity shareLinkEntity = baseMapper.selectById(shareId);
         Integer userId = TokenUtil.getUserId(token);
 
         if (shareLinkEntity == null || !shareLinkEntity.getUserId().equals(userId)) {
-            GlobalExceptionHandler.responseError(response, "没有该分享链接");
-            return false;
+            throw new BusinessException(403, "没有该分享链接");
         }
 
         return baseMapper.deleteById(shareId) == 1;
@@ -154,7 +142,6 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
 
     @Override
     public DirDto getShareUrlContent(String token, String shareUrl) {
-        HttpServletResponse response = getResponse();
         Integer userId = TokenUtil.getUserId(token);
         DirDto dirDto = new DirDto();
         ShareLinkEntity shareLinkEntity = baseMapper.selectOne(new QueryWrapper<ShareLinkEntity>()
@@ -162,8 +149,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
 
         boolean isPass = shareLinkEntity == null || (!shareLinkEntity.getTargetId().equals(0)) && !shareLinkEntity.getTargetId().equals(userId);
         if (isPass) {
-            GlobalExceptionHandler.responseError(response, "没有该分享链接");
-            return null;
+            throw new BusinessException(403, "没有该分享链接");
         }
 
         List<FileInfoDto> fileInfoDtos = new ArrayList<>();
@@ -171,23 +157,18 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
         if (shareLinkEntity.getIsDir()) {
             DirEntity dirEntity = dirMapper.selectById(shareLinkEntity.getFileId());
             if (dirEntity == null) {
-                GlobalExceptionHandler.responseError(response, "文件夹不存在");
-                return null;
+                throw new BusinessException(403, "文件夹不存在");
             }
             List<UserFileEntity> userFileEntityList = userFileMapper.selectList(new QueryWrapper<UserFileEntity>()
                     .eq("dir_id", dirEntity.getDirId())
                     .eq("user_id", shareLinkEntity.getUserId()));
 
             if (userFileEntityList == null || userFileEntityList.size() <= 0) {
-                GlobalExceptionHandler.responseError(response, "文件夹不存在");
-                return null;
+                throw new BusinessException(403, "文件夹不存在");
             }
 
             for (UserFileEntity userFileEntity : userFileEntityList) {
-                FileInfoDto dto = getFileInfo(userFileEntity, response);
-                if (dto == null) {
-                    return null;
-                }
+                FileInfoDto dto = getFileInfo(userFileEntity);
                 fileInfoDtos.add(dto);
                 dirDto.setFileInfoDtos(fileInfoDtos);
             }
@@ -196,14 +177,10 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
             UserFileEntity userFileEntity = userFileMapper.selectById(shareLinkEntity.getFileId());
 
             if (userFileEntity == null) {
-                GlobalExceptionHandler.responseError(response, "文件不存在");
-                return null;
+                throw new BusinessException(403, "文件不存在");
             }
 
-            FileInfoDto dto = getFileInfo(userFileEntity, response);
-            if (dto == null) {
-                return null;
-            }
+            FileInfoDto dto = getFileInfo(userFileEntity);
             fileInfoDtos.add(dto);
             dirDto.setFileInfoDtos(fileInfoDtos);
         }
@@ -213,34 +190,29 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
 
     @Override
     public boolean saveShare(String token, String shareUrl, Integer objectId, Integer targetDir, Boolean isDir) {
-        HttpServletResponse response = getResponse();
         Integer userId = TokenUtil.getUserId(token);
         ShareLinkEntity shareLinkEntity = baseMapper.selectOne(new QueryWrapper<ShareLinkEntity>()
                 .eq("link", shareUrl));
         boolean isPass = shareLinkEntity == null || (!shareLinkEntity.getTargetId().equals(0)) && !shareLinkEntity.getTargetId().equals(userId);
         if (isPass) {
-            GlobalExceptionHandler.responseError(response, "没有该分享链接");
-            return false;
+            throw new BusinessException(403, "没有该分享链接");
         }
 
         DirEntity dirEntity = dirMapper.selectById(targetDir);
         if (dirEntity == null || !dirEntity.getUserId().equals(userId)) {
-            GlobalExceptionHandler.responseError(response, "目标目录ID不正确");
-            return false;
+            throw new BusinessException(403, "目标目录ID不正确");
         }
 
         if (isDir) {
             if (!shareLinkEntity.getFileId().equals(objectId)) {
-                GlobalExceptionHandler.responseError(response, "无权限");
-                return false;
+                throw new BusinessException(403, "无权限");
             }
 
             List<UserFileEntity> userFileEntityList = userFileMapper.selectList(new QueryWrapper<UserFileEntity>()
                     .eq("dir_id", objectId));
 
             if (userFileEntityList == null || userFileEntityList.size() <= 0) {
-                GlobalExceptionHandler.responseError(response, "文件夹内无文件");
-                return false;
+                throw new BusinessException(403, "文件夹内无文件");
             }
 
 
@@ -256,8 +228,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
             UserFileEntity userFileEntity = userFileMapper.selectById(objectId);
 
             if (userFileEntity == null) {
-                GlobalExceptionHandler.responseError(response, "无此文件");
-                return false;
+                throw new BusinessException(403, "无此文件");
             }
             userFileEntity.setUserFileId(null);
             userFileEntity.setDirId(targetDir);
@@ -269,11 +240,10 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
     }
 
 
-    private FileInfoDto getFileInfo(UserFileEntity userFileEntity, HttpServletResponse response) {
+    private FileInfoDto getFileInfo(UserFileEntity userFileEntity) {
         FileEntity fileEntity = fileMapper.selectById(userFileEntity.getFileId());
         if (fileEntity == null) {
-            GlobalExceptionHandler.responseError(response, "文件不存在");
-            return null;
+            throw new BusinessException(403, "文件不存在");
         }
         FileInfoDto dto = new FileInfoDto();
         dto.setFileName(fileEntity.getFileName());
@@ -306,9 +276,5 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
         }
 
         return date;
-    }
-
-    private HttpServletResponse getResponse() {
-        return ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
     }
 }

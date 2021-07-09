@@ -118,7 +118,7 @@ public class FileController {
     }
 
     @ApiOperation("下载文件")
-    @PostMapping("/downloadFile")
+    @GetMapping("/downloadFile")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity downloadFile(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
                                      @ApiParam("文件ID") @RequestParam Integer userFileId,

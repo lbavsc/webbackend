@@ -1,6 +1,7 @@
 package com.four.webbackend.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.four.webbackend.exception.BusinessException;
 import com.four.webbackend.model.ResultEntity;
 import com.four.webbackend.util.ResultUtil;
 import org.apache.shiro.ShiroException;
@@ -110,6 +111,11 @@ public class GlobalExceptionHandler {
         return ResultUtil.error(404, e.getMessage());
     }
 
+
+    @ExceptionHandler(BusinessException.class)
+    public ResultEntity handle(BusinessException e) {
+        return ResultUtil.error(e.getCode(), e.getMessage());
+    }
 
     /**
      * 捕捉其他所有异常

@@ -45,6 +45,7 @@ public class CustomRealm extends AuthorizingRealm {
 
     private boolean exist(String token) {
         boolean isExist = false;
+
         String uid = TokenUtil.getAccount(token);
         Integer userId = TokenUtil.getUserId(token);
         UserEntity userEntity = userMapper.selectById(userId);
@@ -53,7 +54,6 @@ public class CustomRealm extends AuthorizingRealm {
         }
         return isExist;
     }
-
 
 
     /**
@@ -86,7 +86,7 @@ public class CustomRealm extends AuthorizingRealm {
         System.out.println("身份认证");
         String token = (String) authenticationToken.getCredentials();
 
-        if (!exist(token)) {
+        if (token != null && !exist(token)) {
             throw new AuthenticationException("认证失败！");
         }
 

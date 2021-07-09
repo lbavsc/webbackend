@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.four.webbackend.entity.DirEntity;
 import com.four.webbackend.entity.FileEntity;
 import com.four.webbackend.entity.UserFileEntity;
+import com.four.webbackend.exception.BusinessException;
 import com.four.webbackend.handler.GlobalExceptionHandler;
 import com.four.webbackend.mapper.DirMapper;
 import com.four.webbackend.mapper.FileMapper;
@@ -56,11 +57,9 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
     public boolean rename(String token, RenameFileOrDirVo renameFileOrDirVo) {
         Integer userId = TokenUtil.getUserId(token);
         DirEntity dirEntity = baseMapper.selectById(renameFileOrDirVo.getObjectId());
-        HttpServletResponse response = getResponse();
 
         if (dirEntity == null || !dirEntity.getUserId().equals(userId)) {
-            GlobalExceptionHandler.responseError(response, "没有该目录");
-            return false;
+            throw new BusinessException(403, "没有该目录");
         }
 
         dirEntity.setDirName(renameFileOrDirVo.getNewName());
@@ -73,15 +72,18 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
         DirEntity dirEntity = baseMapper.selectById(deleteVo.getFileId());
 
         if (dirEntity == null || !dirEntity.getUserId().equals(userId)) {
-            throw new AccountException("没有该目录");
+            throw new BusinessException(403, "没有该目录");
         }
 
         int count = userFileMapper.selectCount(new QueryWrapper<UserFileEntity>()
                 .eq("user_id", userId)
                 .eq("dir_id", dirEntity.getDirId()));
 
-        if (count > 0) {
-            throw new AccountException("只能删除空文件夹");
+        int countDir = count(new QueryWrapper<DirEntity>()
+                .eq("owned_dir_id", deleteVo.getFileId()));
+
+        if (count > 0 || countDir > 0) {
+            throw new BusinessException(403, "只能删除空文件夹");
         }
 
         baseMapper.deleteById(deleteVo.getFileId());
@@ -146,21 +148,14 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
     @Override
     public boolean createDir(String token, Integer dirId, String dirName) {
         Integer userId = TokenUtil.getUserId(token);
-        HttpServletResponse response = getResponse();
         DirEntity dirEntity = new DirEntity();
         dirEntity.setOwnedDirId(dirId);
         if (dirName.isEmpty()) {
-            GlobalExceptionHandler.responseError(response, "文件夹名不能为空");
+            throw new BusinessException(403, "文件夹名不能为空");
         }
         dirEntity.setDirName(dirName);
         dirEntity.setUserId(userId);
 
         return baseMapper.insert(dirEntity) == 1;
-    }
-
-
-
-    private HttpServletResponse getResponse() {
-        return ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getResponse();
     }
 }
