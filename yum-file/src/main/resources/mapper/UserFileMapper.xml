@@ -19,7 +19,7 @@
         SET is_delete=0
         WHERE is_delete = 1
           AND user_id = #{userId}
-
+          AND user_file_id = #{userFileId}
 
     </update>
     <delete id="realDel">
@@ -27,6 +27,7 @@
         FROM user_file
         WHERE is_delete = 1
           AND user_id = #{userId}
+          AND user_file_id = #{userFileId}
     </delete>
     <select id="selectPageVo" resultType="com.four.webbackend.entity.UserFileEntity">
         SELECT file_id, user_file_id
