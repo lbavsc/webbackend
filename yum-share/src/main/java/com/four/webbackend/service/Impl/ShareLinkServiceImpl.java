@@ -70,7 +70,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
     @Override
     public String share(String token, ShareVo shareVo) {
         Integer userId = TokenUtil.getUserId(token);
-        System.err.println(shareVo);
+
         ShareLinkEntity shareLinkEntity = new ShareLinkEntity();
         Date expire = getExpireDate(shareVo.getExpire());
         if (expire == null) {
@@ -81,7 +81,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
         UserEntity targetEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
                 .eq("user_uuid", shareVo.getTargetId()));
 
-        if (targetEntity == null) {
+        if (shareVo.getTargetId() != 0 && targetEntity == null) {
             throw new BusinessException(403, "无uuid为" + shareVo.getTargetId() + "的人员");
         }
 
@@ -111,7 +111,11 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
         String url = RandomStringUtils.random(16, true, true);
         shareLinkEntity.setLink(url);
 
-        shareLinkEntity.setTargetId(targetEntity.getUserId());
+        if (shareVo.getTargetId() == 0) {
+            shareLinkEntity.setTargetId(0);
+        } else {
+            shareLinkEntity.setTargetId(targetEntity.getUserId());
+        }
 
 
         if (baseMapper.insert(shareLinkEntity) != 1) {
