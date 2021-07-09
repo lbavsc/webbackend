@@ -12,6 +12,7 @@ import com.four.webbackend.util.TokenUtil;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,6 +31,7 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
     private final FileMapper fileMapper;
     private final DirMapper dirMapper;
     private final UserFileMapper userFileMapper;
+    private final UserMapper userMapper;
 
     /**
      * 一天
@@ -57,23 +59,32 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
     public static final long PERMANENT_EXPIRE_TIME = 99999L * 24 * 60 * 60;
 
     @Autowired
-    public ShareLinkServiceImpl(FileMapper fileMapper, DirMapper dirMapper, UserFileMapper userFileMapper) {
+    public ShareLinkServiceImpl(FileMapper fileMapper, DirMapper dirMapper, UserFileMapper userFileMapper, UserMapper userMapper) {
         this.fileMapper = fileMapper;
         this.dirMapper = dirMapper;
         this.userFileMapper = userFileMapper;
+        this.userMapper = userMapper;
     }
 
 
     @Override
     public String share(String token, ShareVo shareVo) {
         Integer userId = TokenUtil.getUserId(token);
-
+        System.err.println(shareVo);
         ShareLinkEntity shareLinkEntity = new ShareLinkEntity();
         Date expire = getExpireDate(shareVo.getExpire());
         if (expire == null) {
             throw new BusinessException(403, "过期时间设置错误");
         }
         shareLinkEntity.setExpire(expire);
+
+        UserEntity targetEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
+                .eq("user_uuid", shareVo.getTargetId()));
+
+        if (targetEntity == null) {
+            throw new BusinessException(403, "无uuid为" + shareVo.getTargetId() + "的人员");
+        }
+
 
         if (!shareVo.getIsDir()) {
             UserFileEntity userFileEntity = userFileMapper.selectById(shareVo.getObjectId());
@@ -91,14 +102,18 @@ public class ShareLinkServiceImpl extends ServiceImpl<ShareLinkMapper, ShareLink
             shareLinkEntity.setFileId(dirEntity.getDirId());
 
         }
-        shareLinkEntity.setIsDir(shareVo.getIsDir());
+
         shareLinkEntity.setUserId(userId);
-        shareLinkEntity.setIsDir(shareLinkEntity.getIsDir());
+//        shareLinkEntity.setIsDir(shareLinkEntity.getIsDir());
+
+        shareLinkEntity.setIsDir(shareVo.getIsDir());
 
         String url = RandomStringUtils.random(16, true, true);
         shareLinkEntity.setLink(url);
 
-        shareLinkEntity.setTargetId(shareVo.getTargetId());
+        shareLinkEntity.setTargetId(targetEntity.getUserId());
+
+
         if (baseMapper.insert(shareLinkEntity) != 1) {
             throw new BusinessException(403, "分享失败,请重试");
         }
