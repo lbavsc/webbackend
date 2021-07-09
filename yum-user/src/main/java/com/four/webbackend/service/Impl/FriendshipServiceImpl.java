@@ -96,9 +96,15 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
         UserEntity userEntity = userMapper.selectOne(new QueryWrapper<UserEntity>()
                 .eq("user_uuid", uuid));
 
+
         if (userEntity == null) {
             throw new BusinessException(403, "没有uuid为" + uuid + "的用户");
 
+        }
+
+        assert uuid != null;
+        if (uuid.equals(uid)) {
+            throw new BusinessException(403, "您不能添加自己为好友");
         }
 
         if (!userEntity.getUserId().equals(userId)) {
@@ -120,13 +126,19 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
         if (count > 0) {
             throw new BusinessException(403, "已有此条申请记录,请重试");
         }
-        if (listBuddy(token).size() > 0) {
+
+        int buddy = baseMapper.selectCount(new QueryWrapper<FriendshipEntity>()
+                .eq("status", FriendshipConstant.PASS_REVIEW)
+                .or(wrapper -> wrapper.eq("user1_id", TokenUtil.getUserId(token))
+                        .eq("user2_id", userEntity.getUserId()))
+                .or(wrapper -> wrapper.eq("user2_id", TokenUtil.getUserId(token))
+                        .eq("user1_id", userEntity.getUserId())));
+        if (buddy > 0) {
             throw new BusinessException(403, "对方已是您的好友");
         }
 
         FriendshipEntity friendshipEntity = new FriendshipEntity();
         friendshipEntity.setUser1Id(userEntity.getUserId());
-        assert buddyEntity != null;
         friendshipEntity.setUser2Id(buddyEntity.getUserId());
         friendshipEntity.setStatus(FriendshipConstant.UNDER_REVIEW);
 
