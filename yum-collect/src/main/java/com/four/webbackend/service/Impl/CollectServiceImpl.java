@@ -91,7 +91,7 @@ public class CollectServiceImpl extends ServiceImpl<CollectMapper, CollectEntity
     @Override
     public boolean favorFile(String token, Integer userFileId) {
         UserFileEntity userFileEntity = userFileMapper.selectById(userFileId);
-        if (userFileEntity == null || userFileEntity.getUserId().equals(TokenUtil.getUserId(token))) {
+        if (userFileEntity == null || !userFileEntity.getUserId().equals(TokenUtil.getUserId(token))) {
             throw new BusinessException(403, "没有该文件");
         }
 

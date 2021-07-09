@@ -17,6 +17,14 @@
             <artifactId>yum-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.ceph/rados -->
+        <dependency>
+            <groupId>com.ceph</groupId>
+            <artifactId>rados</artifactId>
+            <version>0.5.0</version>
+        </dependency>
+
     </dependencies>
 
 </project>
