@@ -22,7 +22,7 @@ public class ShareListDto implements Serializable {
 
     private String shareUrl;
 
-    private Integer targetId;
+    private String targetName;
 
     private Date expire;
 

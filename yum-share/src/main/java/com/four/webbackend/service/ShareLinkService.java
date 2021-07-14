@@ -29,4 +29,6 @@ public interface ShareLinkService extends IService<ShareLinkEntity> {
 
 
     boolean saveShare(String token, String shareUrl, Integer objectId,  Integer targetDir,Boolean isDir);
+
+    List<ShareListDto> listShareReceived(String token);
 }

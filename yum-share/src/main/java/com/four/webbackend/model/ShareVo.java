@@ -31,7 +31,7 @@ public class ShareVo implements Serializable {
 
     @ApiModelProperty(value = "分享者id")
     @NotEmpty(message = "分享者id不能为空")
-    private Integer sourceId;
+    private Long sourceId;
 
     @ApiModelProperty(value = "分享者id, 如果为0则所有人都可查看该链接")
     @NotEmpty(message = "被分享者id不能为空")

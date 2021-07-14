@@ -3,6 +3,7 @@ package com.four.webbackend.service.Impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.four.webbackend.entity.DirEntity;
 import com.four.webbackend.entity.UserEntity;
+import com.four.webbackend.exception.BusinessException;
 import com.four.webbackend.handler.GlobalExceptionHandler;
 import com.four.webbackend.mapper.DirMapper;
 import com.four.webbackend.mapper.UserMapper;
@@ -159,6 +160,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, UserEntity> impleme
         userEntity.setPassword(passwd);
         baseMapper.updateById(userEntity);
         return true;
+    }
+
+    @Override
+    public UserDto infoById(String userId) {
+        UserEntity userEntity = baseMapper.selectById(userId);
+        if (userEntity == null) {
+            throw new BusinessException(403, "无该人员资料");
+        }
+        UserDto userDto = new UserDto();
+        BeanUtils.copyProperties(userEntity, userDto);
+        return userDto;
     }
 
 

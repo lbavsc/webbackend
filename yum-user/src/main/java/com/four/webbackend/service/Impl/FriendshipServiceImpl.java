@@ -99,7 +99,6 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
 
         if (userEntity == null) {
             throw new BusinessException(403, "没有uuid为" + uuid + "的用户");
-
         }
 
         assert uuid != null;
@@ -116,24 +115,26 @@ public class FriendshipServiceImpl extends ServiceImpl<FriendshipMapper, Friends
                         .or().eq("email", uid)));
         if (buddyEntity == null) {
             throw new BusinessException(403, "没有uuid(邮箱)为" + uid + "的用户");
-
         }
 
         Integer count = baseMapper.selectCount(new QueryWrapper<FriendshipEntity>()
                 .eq("user1_id", TokenUtil.getUserId(token))
-                .eq("user2_id", userEntity.getUserId())
+                .eq("user2_id", buddyEntity.getUserId())
                 .eq("status", FriendshipConstant.UNDER_REVIEW));
         if (count > 0) {
             throw new BusinessException(403, "已有此条申请记录,请重试");
         }
 
-        int buddy = baseMapper.selectCount(new QueryWrapper<FriendshipEntity>()
+        int buddy = count(new QueryWrapper<FriendshipEntity>()
                 .eq("status", FriendshipConstant.PASS_REVIEW)
-                .or(wrapper -> wrapper.eq("user1_id", TokenUtil.getUserId(token))
-                        .eq("user2_id", userEntity.getUserId()))
-                .or(wrapper -> wrapper.eq("user2_id", TokenUtil.getUserId(token))
-                        .eq("user1_id", userEntity.getUserId())));
-        if (buddy > 0) {
+                .and(wrapper -> wrapper.eq("user1_id", TokenUtil.getUserId(token))
+                        .eq("user2_id", buddyEntity.getUserId()))
+        );
+        int buddy2 = count(new QueryWrapper<FriendshipEntity>()
+                .eq("status", FriendshipConstant.PASS_REVIEW)
+                .and(wrapper -> wrapper.eq("user2_id", TokenUtil.getUserId(token))
+                        .eq("user1_id", buddyEntity.getUserId())));
+        if (buddy > 0 || buddy2 > 0) {
             throw new BusinessException(403, "对方已是您的好友");
         }
 

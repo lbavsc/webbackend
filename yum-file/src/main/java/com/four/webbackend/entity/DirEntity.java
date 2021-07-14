@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.*;
 
 import java.util.Date;
 import java.io.Serializable;
+import java.util.List;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -60,6 +62,5 @@ public class DirEntity implements Serializable {
     @ApiModelProperty(value = "修改时间")
     @TableField("gmt_update")
     private Date gmtUpdate;
-
 
 }

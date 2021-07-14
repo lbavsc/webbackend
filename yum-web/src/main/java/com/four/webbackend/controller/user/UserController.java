@@ -79,6 +79,19 @@ public class UserController {
         return ResultUtil.success(dto);
     }
 
+    @ApiOperation("根据用户id获得用户信息")
+    @GetMapping("/id/getInfo")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity infoById(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
+                                 @RequestParam String userId) {
+
+        UserDto dto = userService.infoById(userId);
+        if (dto == null) {
+            return ResultUtil.error(403, "获取个人信息失败,请重试");
+        }
+        return ResultUtil.success(dto);
+    }
+
     @ApiOperation("修改个人信息")
     @PostMapping("/modifyInfo")
     @RequiresRoles(logical = Logical.OR, value = {"user"})

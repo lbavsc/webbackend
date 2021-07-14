@@ -78,7 +78,7 @@ public class FileController {
     @PostMapping("/mobileFile")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity mobileFile(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
-                                   MobileFileVo mobileFileVo) {
+                                   @RequestBody MobileFileVo mobileFileVo) {
 
         if (!fileService.mobileFile(token, mobileFileVo)) {
             return null;

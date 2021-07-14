@@ -4,6 +4,7 @@ import com.four.webbackend.entity.DirEntity;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.four.webbackend.model.DeleteVo;
 import com.four.webbackend.model.DirDto;
+import com.four.webbackend.model.DirTreeDto;
 import com.four.webbackend.model.RenameFileOrDirVo;
 
 import javax.servlet.http.HttpServletResponse;
@@ -29,4 +30,6 @@ public interface DirService extends IService<DirEntity> {
 
 
     boolean createDir(String token, Integer dirId, String dirName);
+
+    DirTreeDto getTree(String token);
 }

@@ -30,4 +30,5 @@ public interface UserService extends IService<UserEntity> {
 
     boolean forgotPwd(ForgotPwdVo forgotPwdVo);
 
+    UserDto infoById(String userId);
 }

@@ -3,6 +3,7 @@ package com.four.webbackend.controller.file;
 
 import com.four.webbackend.model.CopyFileVo;
 import com.four.webbackend.model.DirDto;
+import com.four.webbackend.model.DirTreeDto;
 import com.four.webbackend.model.ResultEntity;
 import com.four.webbackend.service.DirService;
 import com.four.webbackend.util.ResultUtil;
@@ -59,6 +60,15 @@ public class DirController {
             return null;
         }
         return ResultUtil.success();
+    }
+
+    @ApiOperation("获得文件目录树")
+    @GetMapping("/tree")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity getTree(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token) {
+
+        DirTreeDto dirTreeDto = dirService.getTree(token);
+        return ResultUtil.success(dirTreeDto);
     }
 }
 

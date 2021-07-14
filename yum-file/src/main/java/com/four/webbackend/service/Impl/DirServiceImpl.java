@@ -158,4 +158,45 @@ public class DirServiceImpl extends ServiceImpl<DirMapper, DirEntity> implements
 
         return baseMapper.insert(dirEntity) == 1;
     }
+
+    @Override
+    public DirTreeDto getTree(String token) {
+        Integer userId = TokenUtil.getUserId(token);
+        List<DirEntity> list = baseMapper.selectList(new QueryWrapper<DirEntity>()
+                .eq("user_id", userId));
+
+        if (list == null || list.isEmpty()) {
+            throw new BusinessException(403, "数据错误");
+        }
+
+        DirTreeDto rootDir = new DirTreeDto();
+        DirEntity entity = baseMapper.selectOne(new QueryWrapper<DirEntity>()
+                .eq("user_id", userId)
+                .eq("owned_dir_id", 0));
+        rootDir.setId(entity.getDirId());
+        rootDir.setLabel("根目录");
+
+        rootDir.setChildren(getChildrenDir(list, entity.getDirId()));
+
+        return rootDir;
+
+    }
+
+    public List<DirTreeDto> getChildrenDir(List<DirEntity> dataSetDirectories, Integer parentId) {
+        List<DirTreeDto> result = new ArrayList<>();
+        for (DirEntity dataSetDirectory : dataSetDirectories) {
+            if (null == dataSetDirectory) {
+                continue;
+            }
+
+            if (Objects.equals(dataSetDirectory.getOwnedDirId(), parentId)) {
+                DirTreeDto dirTreeDto = new DirTreeDto();
+                dirTreeDto.setId(dataSetDirectory.getDirId());
+                dirTreeDto.setLabel(dataSetDirectory.getDirName());
+                dirTreeDto.setChildren(getChildrenDir(dataSetDirectories, dataSetDirectory.getDirId()));
+                result.add(dirTreeDto);
+            }
+        }
+        return result;
+    }
 }

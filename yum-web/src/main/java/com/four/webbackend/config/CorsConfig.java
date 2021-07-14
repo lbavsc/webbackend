@@ -28,6 +28,7 @@ public class CorsConfig {
         corsConfiguration.addAllowedOrigin("http://192.168.2.120:9090");
         corsConfiguration.addAllowedOrigin("http://192.168.2.120:9528");
         corsConfiguration.addAllowedOrigin("http://192.168.2.120:8081");
+        corsConfiguration.addAllowedOrigin("http://192.168.2.175:9009");
         corsConfiguration.addAllowedOrigin("http://localhost:8080");
         corsConfiguration.addAllowedOrigin("http://localhost:8081");
         corsConfiguration.addAllowedOrigin("http://localhost:9009");

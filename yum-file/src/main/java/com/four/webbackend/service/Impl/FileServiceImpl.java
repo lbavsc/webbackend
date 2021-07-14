@@ -63,10 +63,10 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
 
     @Override
     public boolean mobileFile(String token, MobileFileVo mobileFileVo) {
-
         UserFileEntity userFileEntity = userFileMapper.selectById(mobileFileVo.getUserFileId());
+        Integer userId = TokenUtil.getUserId(token);
 
-        if (userFileEntity == null || !userFileEntity.getUserId().equals(TokenUtil.getUserId(token))) {
+        if (userFileEntity == null || !userFileEntity.getUserId().equals(userId)) {
             throw new BusinessException(403, "该目录不存在此文件");
         }
 
@@ -75,12 +75,13 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, FileEntity> impleme
         return userFileMapper.updateById(userFileEntity) == 1;
     }
 
+
     @Override
     public boolean rename(String token, RenameFileOrDirVo renameFileOrDirVo) {
         Integer userId = TokenUtil.getUserId(token);
         UserFileEntity userFileEntity = userFileMapper.selectById(renameFileOrDirVo.getObjectId());
 
-        if (userFileEntity == null || userFileEntity.getUserId().equals(userId)) {
+        if (userFileEntity == null || !userFileEntity.getUserId().equals(userId)) {
             throw new BusinessException(403, "没有该文件");
         }
 

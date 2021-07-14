@@ -1,10 +1,7 @@
 package com.four.webbackend.controller.share;
 
 
-import com.four.webbackend.model.DirDto;
-import com.four.webbackend.model.ResultEntity;
-import com.four.webbackend.model.ShareListDto;
-import com.four.webbackend.model.ShareVo;
+import com.four.webbackend.model.*;
 import com.four.webbackend.service.ShareLinkService;
 import com.four.webbackend.util.ResultUtil;
 import io.swagger.annotations.Api;
@@ -68,6 +65,21 @@ public class ShareLinkController {
         return ResultUtil.success(shareListVos);
     }
 
+    @ApiOperation("获取用户收到的分享列表")
+    @PostMapping("/listShare/received")
+    @RequiresRoles(logical = Logical.OR, value = {"user"})
+    public ResultEntity listShareReceived(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token) {
+
+        List<ShareListDto> shareListVos = shareLinkService.listShareReceived(token);
+
+        if (shareListVos == null || shareListVos.size() <= 0) {
+            return ResultUtil.error(403, "无数据");
+        }
+
+
+        return ResultUtil.success(shareListVos);
+    }
+
     @ApiOperation("取消分享")
     @GetMapping("/recellShare")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
@@ -92,19 +104,16 @@ public class ShareLinkController {
             return null;
         }
 
-        return ResultUtil.success();
+        return ResultUtil.success(dto);
     }
 
     @ApiOperation("将分享的文件保存到自己云盘")
     @PostMapping("/saveShare")
     @RequiresRoles(logical = Logical.OR, value = {"user"})
     public ResultEntity saveShare(@ApiParam("当前操作用户token") @RequestHeader() @NotNull(message = "token不能为空") String token,
-                                  @RequestParam @NotEmpty(message = "分享id不能为空") String shareUrl,
-                                  @RequestParam @NotEmpty(message = "分享id不能为空") Integer objectId,
-                                  @RequestParam @NotEmpty(message = "目标目录") Integer targetDir,
-                                  @RequestParam @NotEmpty(message = "是否是文件夹") Boolean isDir) {
+                                @RequestBody SaveVo saveVo) {
 
-        if (!shareLinkService.saveShare(token, shareUrl, objectId, targetDir, isDir)) {
+        if (!shareLinkService.saveShare(token, saveVo.getShareUrl(), saveVo.getObjectId(), saveVo.getTargetDir(), saveVo.getIsDir())) {
             return null;
         }
 
